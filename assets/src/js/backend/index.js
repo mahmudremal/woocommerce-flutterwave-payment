@@ -1,7 +1,7 @@
 
 import Swal from "sweetalert2";
 // import Toastify from 'toastify-js';
-import Sortable from 'sortablejs';
+// import Sortable from 'sortablejs';
 
 (function ($) {
 	class FWPListivoBackendJS {

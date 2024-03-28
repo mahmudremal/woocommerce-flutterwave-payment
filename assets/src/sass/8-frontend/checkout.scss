@@ -13,3 +13,12 @@ $popupStepHeight: 300px;
 
 $frameWidth: 350px;
 $frameHeight: 600px;
+
+#payment_method_flutterwave {
+  & + label {
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+}

@@ -22,7 +22,7 @@ function scan_directory_for_i18n_data($directory) {
                 $objectKey = $match[2];
                 $translationValue = $match[3];
 
-                $translationValue = "__('" . addslashes($translationValue) . "', 'ctto')"; // Replace 'mydomain' with your actual domain
+                $translationValue = "__('" . addslashes($translationValue) . "', 'wooflutter')"; // Replace 'mydomain' with your actual domain
                 $allI18ns[$objectKey] = $translationValue;
             }
         }

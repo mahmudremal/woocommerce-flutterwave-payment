@@ -33,7 +33,6 @@ class Update {
         $this->set_repository('woocommerce-flutterwave-payment');
         $this->authorize(false);
         $this->initialize();
-
         /**
          * To check immediate update removing transition delay.
          */

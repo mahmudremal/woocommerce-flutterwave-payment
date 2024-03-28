@@ -11,3 +11,8 @@ import '../sass/admin.scss';
 
 // Images.
 // import '../img/signature.png';
+
+// Icons.
+import '../icons/flutterwave.svg';
+import '../icons/flutterwave-full.svg';
+import '../icons/flutterwave-white.svg';

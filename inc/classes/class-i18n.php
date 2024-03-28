@@ -39,11 +39,11 @@ class I18n {
 		$this->translations = (array) $this->get_translations('teddy-bear-translations', []);
 	}
 	public function load_plugin_textdomain() {
-		load_plugin_textdomain('ctto', false, dirname(plugin_basename(WOOFLUTTER_FILE__)) . '/languages');
+		load_plugin_textdomain('wooflutter', false, dirname(plugin_basename(WOOFLUTTER_FILE__)) . '/languages');
 	}
 	public function js_translates() {
 		$translates = [
-			'submit' => __('Submit', 'ctto'),
+			'submit' => __('Submit', 'wooflutter'),
 			// ...
 		];
 		wp_send_json_success([

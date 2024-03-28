@@ -41,6 +41,8 @@ We welcome contributions to enhance the functionality of this plugin. If you hav
 
 This plugin is licensed under the [GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.en.html) License.
 
+## Branding
+Branding follows according to the [referance](https://brandfetch.com/flutterwave.com?view=library&library=default&collection=logos).
 
 #### Hi, I'm Remal Mahmud, currently working on something freelance projects 😉
 ### Connect with me:

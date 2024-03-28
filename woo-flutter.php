@@ -28,7 +28,6 @@
  * Bootstrap the plugin.
  */
 
-
 defined('WOOFLUTTER_FILE__') || define('WOOFLUTTER_FILE__', untrailingslashit(__FILE__));
 defined('WOOFLUTTER_DIR_PATH') || define('WOOFLUTTER_DIR_PATH', untrailingslashit(plugin_dir_path(WOOFLUTTER_FILE__)));
 defined('WOOFLUTTER_DIR_URI') || define('WOOFLUTTER_DIR_URI', untrailingslashit(plugin_dir_url(WOOFLUTTER_FILE__)));
@@ -40,11 +39,7 @@ defined('WOOFLUTTER_BUILD_IMG_URI') || define('WOOFLUTTER_BUILD_IMG_URI', untrai
 defined('WOOFLUTTER_BUILD_CSS_URI') || define('WOOFLUTTER_BUILD_CSS_URI', untrailingslashit(WOOFLUTTER_DIR_URI) . '/assets/build/css');
 defined('WOOFLUTTER_BUILD_CSS_DIR_PATH') || define('WOOFLUTTER_BUILD_CSS_DIR_PATH', untrailingslashit(WOOFLUTTER_DIR_PATH) . '/assets/build/css');
 defined('WOOFLUTTER_BUILD_LIB_URI') || define('WOOFLUTTER_BUILD_LIB_URI', untrailingslashit(WOOFLUTTER_DIR_URI) . '/assets/build/library');
-defined('WOOFLUTTER_ARCHIVE_POST_PER_PAGE') || define('WOOFLUTTER_ARCHIVE_POST_PER_PAGE', 9);
-defined('WOOFLUTTER_SEARCH_RESULTS_POST_PER_PAGE') || define('WOOFLUTTER_SEARCH_RESULTS_POST_PER_PAGE', 9);
-defined('WOOFLUTTER_OPTIONS') || define('WOOFLUTTER_OPTIONS', get_option('ctto'));
-defined('WOOFLUTTER_UPLOAD_DIR') || define('WOOFLUTTER_UPLOAD_DIR', wp_upload_dir()['basedir'].'/custom_popup/');
-defined('WOOFLUTTER_AUDIO_DURATION') || define('WOOFLUTTER_AUDIO_DURATION', 20);
+defined('WOOFLUTTER_OPTIONS') || define('WOOFLUTTER_OPTIONS', get_option('wooflutter'));
 
 require_once WOOFLUTTER_DIR_PATH . '/inc/helpers/autoloader.php';
 // require_once WOOFLUTTER_DIR_PATH . '/inc/helpers/template-tags.php';
@@ -56,10 +51,11 @@ try {
 		wooflutter_get_instance();
 	}
 } catch (\Exception $e) {
-	// echo "Exception: " . $e->getMessage();
+	wp_die($e->getMessage(), 'Exception');
 } catch (\Error $e) {
-	// echo "Error: " . $e->getMessage();
+	wp_die($e->getMessage(), 'Error');
 } finally {
 	// Optional code that always runs
 	// echo "Finally block executed.";
 }
+
