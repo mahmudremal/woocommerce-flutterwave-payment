@@ -81,6 +81,12 @@ class Woo_Flutter extends \WC_Payment_Gateway {
 	 */
 	public string $live_secret_key;
 	/**
+	 * Flutterwave live encription key.
+	 *
+	 * @var string
+	 */
+	public string $live_encript_key;
+	/**
 	 * API public key.
 	 *
 	 * @var string
@@ -351,7 +357,7 @@ class Woo_Flutter extends \WC_Payment_Gateway {
 		// }
 	}
 	/**
-	 * Outputs scripts used by Rave.
+	 * Outputs scripts used by Flutterwave.
 	 */
 	public function payment_scripts() {
 		global $WooFlutter_Assets;
@@ -503,40 +509,107 @@ class Woo_Flutter extends \WC_Payment_Gateway {
 			// $order->get_transaction_id()
 			$order_data = $order->get_data();
 			$WooFlutter_Flutterwave->set_api_key($this);
-			return [
-				'result'   => 'success',
-				// 'redirect' => $order->get_checkout_payment_url(true),
-				// 'redirect' => $order->get_transaction_id(true),
-				// https://stackoverflow.com/questions/39401393/how-to-get-woocommerce-order-details
-				'redirect' => $WooFlutter_Flutterwave->createPayment([
-					'txref'			=> $order->get_order_key(),
-					'amount'		=> $order->get_total(),
-					'currency'		=> $order->get_currency(),
+			// Mark order as processing
+			$order->update_status('processing', __('Payment intend created, waiting for payment.', 'wooflutter'));
+			
+		
+			$payIntend = $WooFlutter_Flutterwave->createPayment([
+				'tx_ref'			=> $order->get_order_key(),
+				'amount'			=> $order->get_total(),
+				'currency'			=> $order->get_currency(),
 
-					// [first_name] => Remal
-					// [last_name] => M.
-					// [company] => 
-					// [address_1] => 15
-					// [address_2] => 145
-					// [city] => Dhaka
-					// [state] => BD-04
-					// [postcode] => 1236
-					// [country] => BD
-					// [email] => mahmudremal@yahoo.com
-					// [phone] => 01814118328
-					
-					'customer_info'	=> [
-						'customer_name'				=> $order_data['billing']['first_name'] . ' ' . $order_data['billing']['last_name'],
-						'email'						=> $order_data['billing']['email'],
-						'customer_phone'			=> $order_data['billing']['phone']
-					],
-					'customizations'	=> [
-						'title'		=> sprintf('%s Payments', bloginfo('name')),
-                		'logo'		=> WOOFLUTTER_BUILD_URI . '/icons/flutterwave.svg'
-					]
-				]),
-			];
+				'customer'	=> [
+					'name'			=> implode(' ', [$order->get_billing_first_name(), $order->get_billing_last_name()]),
+					'email'			=> $order->get_billing_email(),
+					'phonenumber'	=> $order->get_billing_phone(),
+					'address'		=> $order->get_formatted_billing_address()
+				],
+				'customizations'	=> [
+					'title'			=> sprintf('%s Payments', bloginfo('name')),
+					'logo'			=> WOOFLUTTER_BUILD_URI . '/icons/flutterwave.svg',
+					// 'description'	=> sprintf('', '')
+				],
+				// 'meta'				=> [], // (optional): An object containing any extra information you'd like to store alongside the transaction e.g {consumer_id: 23, consumer_mac: '92a3-912ba-1192a'}
+				// 'payment_options'		=> ['card', 'account', 'banktransfer', 'mpesa', 'mobilemoneyghana', 'mobilemoneyfranco', 'mobilemoneyuganda', 'mobilemoneyrwanda', 'mobilemoneyzambia', 'barter', 'nqr', 'ussd', 'credit'],
+				// 'payment_plan'		=> '', // (optional): The payment plan ID (for when you're collecting a recurring payment) https://developer.flutterwave.com/docs/recurring-payments/payment-plans/
+			]);
+			
+			if ($payIntend && !empty($payIntend)) {
+				$order->update_status('pending');
+				// Reduce stock levels
+				$order->reduce_order_stock();
+				// Remove cart
+				WC()->cart->empty_cart();
+				// Save order
+				$order->save();
+				return [
+					'result'   => 'success',
+					// 'redirect' => $order->get_checkout_payment_url(true),
+					// 'redirect' => $order->get_transaction_id(true),
+					'redirect' => $payIntend,
+				];
+			}
+			
 		}
+	}
+	/**
+	 * Process Refund
+	 *
+	 * @param int $order_id WC Order ID.
+	 * @param float $amount WC Order amount to refund.
+	 * @param string $reason Reason text for the refund operation.
+	 *
+	 * @return array|void
+	 */
+	public function process_refund($order_id, $amount = null, $reason = '') {
+		$order = wc_get_order( $order_id );
+		// print_r('Hi there');wp_die('process_refund');
+		
+		if ( ! $order || ! $order->get_id() ) {
+			return new \WP_Error('invalid_order', __( 'Invalid order.', 'wooflutter'));
+		}
+	
+		// Get the total amount paid for the order
+		$total_paid = $order->get_total();
+	
+		// If no refund amount is specified, use the total amount paid
+		if ( is_null( $amount ) ) {
+			$amount = $total_paid;
+		}
+	
+		// Make sure the refund amount is valid
+		if ( $amount < 0 || $amount > $total_paid ) {
+			return new \WP_Error('invalid_refund_amount', __('Invalid refund amount.', 'wooflutter'));
+		}
+
+		// Make sure the transection id exists
+		$transaction_id = $order->get_transaction_id();
+		if (!$transaction_id || empty($transaction_id)) {
+			return new \WP_Error('invalid_transection_id', __('Transection ID not found', 'wooflutter'));
+		}
+	
+		// Process flutterwave refund function
+		$WooFlutter_Flutterwave->refund($transaction_id, $amount);
+		
+		// Process refund
+		$refund_id = $order->add_order_note(
+			sprintf(
+				__('Refunded %s for reason: %s', 'wooflutter'),
+				wc_price( $amount ),
+				$reason
+			)
+		);
+	
+		if ( is_wp_error( $refund_id ) ) {
+			return $refund_id;
+		}
+	
+		// Reduce order total and save
+		$order->set_total( $total_paid - $amount );
+		$order->save();
+	
+		// Return true to indicate successful refund
+		return true;
 	}
 	/**
 	 * Process a token payment

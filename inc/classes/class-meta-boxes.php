@@ -51,9 +51,9 @@ class Meta_Boxes {
 		<?php
 		$order = wc_get_order($post->ID);
 		// 
-		echo $order->get_checkout_payment_url();
-		// 
-		print_r($order);
+		// echo $order->get_checkout_payment_url();
+		// // 
+		// print_r($order);
 	}
 	/**
 	 * Save post meta into database

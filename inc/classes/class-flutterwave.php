@@ -38,6 +38,7 @@ class Flutterwave {
 		add_filter('template_include', [ $this, 'template_include' ], 10, 1);
 		// add_filter('wooflutter/project/payment/stripe/handle/status', [$this, 'handleStatus'], 10, 3);
 		add_filter('wooflutter/project/payment/flutterwave/verify', [$this, 'verify'], 10, 2);
+		add_filter('wooflutter/project/payment/flutterwave/info', [$this, 'info'], 10, 1);
 
         // Add Flutterwave gateway to available payment gateways in WooCommerce
         add_filter('woocommerce_payment_gateways', [$this, 'add_flutterwave_gateway']);
@@ -106,7 +107,7 @@ class Flutterwave {
 
         curl_close($curl);
 
-        print_r($response);
+        // print_r($response);
 
         if ($err) {
             // Handle error case
@@ -128,73 +129,46 @@ class Flutterwave {
     }
 
 
-	public function paymentStatus($transaction_id) {
-        $url = "{$this->base_url}/transactions/{$transaction_id}/verify";
-
-        $curl = curl_init();
-
-        curl_setopt($curl, CURLOPT_URL, $url);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-            "Content-Type: application/json",
-            "Authorization: Bearer {$this->api_key}"
-       ));
-
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
-
-        curl_close($curl);
-
-        if ($err) {
-            return false;
-        } else {
-            $payment_status = json_decode($response, true);
-            print_r([$payment_status, $this->api_key]);
-            // Process the payment status and return the result
-            return (isset($payment_status['data']) && isset($payment_status['data']['status']))?$payment_status['data']['status']:false;
-        }
-    }
 
     public function createPayment($args) {
         $args = wp_parse_args($args, [
-            'txref' => '',
-            'amount' => '',
-            'currency' => '',
+            // 'txref' => '',
+            // 'amount' => '',
+            // 'currency' => '',
             'redirect_url' => site_url('/payment/flutterwave/'.$args['txref'].'/status/'),
-            'PBFPubKey' => $this->settings['publickey'],
-            'customer_info' => [
-                'email' => '',
-                // 'customer_email' => '',
-				'customer_name' => '',
-				'customer_phone' => ''
-            ]
+            // 'customer_info' => [
+            //     'email' => '',
+            //     // 'customer_email' => '',
+			// 	'customer_name' => '',
+			// 	'customer_phone' => ''
+            // ]
         ]);
-        $args['customer_info']['email'] = ($args['customer_info']['email'] == '')?get_bloginfo('admin_email'):$args['customer_info']['email'];
-
-        $data = [
-            'tx_ref'        => $args['txref'],
-            'amount'        => $args['amount'],
-            'currency'      => $args['currency'],
-            'redirect_url'  => $args['redirect_url'],
-            'customer'      => $args['customer_info'],
-            'payment_options' => [
-                'card' => '1',
-                'mobile_money' => '1',
-                'bank_transfer' => '1',
-                'ussd' => '1',
-                'qr' => '1',
-                'barter' => '1',
-                'bank_account' => '1',
-                'credit' => '1',
-                'debit' => '1',
-                'transfer' => '1'
-            ]
-        ];
-        if(isset($args['subaccounts'])) {
-            $data['subaccounts'] = $args['subaccounts'];
+        if (isset($args['customer_info'])) {
+            $args['customer_info']['email'] = ($args['customer_info']['email'] == '')?get_bloginfo('admin_email'):$args['customer_info']['email'];
         }
+        
 
-        $data_string = json_encode($data);
+        // $data = [
+        //     'tx_ref'        => $args['txref'],
+        //     'amount'        => $args['amount'],
+        //     'currency'      => $args['currency'],
+        //     'redirect_url'  => $args['redirect_url'],
+        //     'customer'      => $args['customer_info'],
+        //     'payment_options' => [
+        //         'card' => '1',
+        //         'mobile_money' => '1',
+        //         'bank_transfer' => '1',
+        //         'ussd' => '1',
+        //         'qr' => '1',
+        //         'barter' => '1',
+        //         'bank_account' => '1',
+        //         'credit' => '1',
+        //         'debit' => '1',
+        //         'transfer' => '1'
+        //     ]
+        // ];
+
+        $data_string = json_encode($args);
 
         $curl = curl_init();
 
@@ -217,6 +191,7 @@ class Flutterwave {
             return null;
         } else {
             $payment_request = json_decode($response, true);
+            // print_r([$args, $payment_request]);
             if($payment_request['status']!=='success') {return false;}
             // Process the payment request and return the result
             return (isset($payment_request['data'])&& isset($payment_request['data']['link']))?$payment_request['data']['link']:false;
@@ -488,10 +463,62 @@ class Flutterwave {
             return $refund_status;
         }
     }
+    /**
+     * Get the payment intend Info which would be called directly from flutterwave server.
+     * 
+     * @param string $transaction_id The transection ID of a payment intend
+     * 
+     * @return object Return an object value of a transection.
+     * @return bool Return an false if transection not found of any error happens.
+     */
+    public function info($transaction_id) {
+        $url = "{$this->base_url}/transactions/{$transaction_id}/verify";
 
+        $curl = curl_init();
+
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+            "Content-Type: application/json",
+            "Authorization: Bearer {$this->api_key}"
+       ));
+
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+
+        curl_close($curl);
+
+        if ($err) {
+            return false;
+        } else {
+            $payment_status = json_decode($response, true);
+            // print_r([$payment_status]);
+            return $payment_status;
+        }
+    }
+    /**
+     * Get the status of a pyment intend ofg a transection.
+     * 
+     * @param string $transaction_id The transection ID of a payment intend
+     * @param string $status The status text to verify is it True of Not.
+     * 
+     * @return bool Return true of false of a status against the transection.
+     */
 	public function verify($transaction_id, $status) {
-		return ($this->paymentStatus($transaction_id) == $status);
+		return ($this->status($transaction_id) == $status);
 	}
+    /**
+     * Get the status of a transection by transection ID.
+     * 
+     * @param string $transaction_id The transection ID of a payment intend
+     * 
+     * @return string String value of the payment status
+     */
+	public function status($transaction_id) {
+        $payment_status = $this->info($transaction_id);
+        // print_r([$payment_status, $this->api_key]);
+        return (isset($payment_status['data']) && isset($payment_status['data']['status']))?$payment_status['data']['status']:false;
+    }
 	
 	public function rewriteRules($rules) {
 		$rules[] = [ 'payment/flutterwave/([^/]*)/([^/]*)/?', 'index.php?transaction_id=$matches[1]&payment_status=$matches[2]', 'top' ];
