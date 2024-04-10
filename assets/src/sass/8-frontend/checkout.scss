@@ -22,3 +22,25 @@ $frameHeight: 600px;
     }
   }
 }
+
+.flutterwave {
+  &__checkout {
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    background-size: 30% auto;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-color: rgba(51, 51, 51, 0.3137254902);
+    animation: 1.4s linear infinite flutterIconFadeInOut;
+  }
+  // &__loading {}
+}
+@keyframes flutterIconFadeInOut {
+  0% {background-blend-mode: normal;}
+  50% {background-blend-mode: multiply;}
+  100% {background-blend-mode: color;}
+}

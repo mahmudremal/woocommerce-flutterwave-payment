@@ -13,7 +13,7 @@ class Shortcodes {
 		$this->setup_hooks();
 	}
 	protected function setup_hooks() {
-		add_shortcode('wooflutter_status', [$this, 'wooflutter_status']);
+		// add_shortcode('wooflutter_status', [$this, 'wooflutter_status']);
 	}
 	public function wooflutter_status($args) {
 		$args = wp_parse_args($args, []);

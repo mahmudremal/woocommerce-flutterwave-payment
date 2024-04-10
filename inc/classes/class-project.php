@@ -20,6 +20,8 @@ class Project {
 		global $WooFlutter_Rewrite;$WooFlutter_Rewrite = Rewrite::get_instance();
 		global $WooFlutter_Meta_Boxes;$WooFlutter_Meta_Boxes = Meta_Boxes::get_instance();
 		global $WooFlutter_Flutterwave;$WooFlutter_Flutterwave = Flutterwave::get_instance();
+		// 
+		// 
 		$this->setup_hooks();
 	}
 	protected function setup_hooks() {

@@ -1,6 +1,9 @@
 <?php
 /**
  * Flutterwave Payment Request Handler
+ * 
+ * @link https://github.com/woocommerce/woocommerce-gateway-stripe/pull/1467/files
+ * @link https://github.com/woocommerce/woocommerce-blocks/blob/trunk/docs/third-party-developers/extensibility/checkout-payment-methods/payment-method-integration.md#client-side-integration
  *
  * @package WooFlutter
  */
@@ -27,7 +30,6 @@ class Flutterwave {
 		$this->api_key  = isset($this->settings['secretkey'])?$this->settings['secretkey']:false;
 		$this->encryptionKey  = isset($this->settings['encryptionkey'])?$this->settings['encryptionkey']:false;
         $this->is_test_mode = true; // WOOFLUTTER_TEST_MODE;
-        global $FWPFlutterwave;$FWPFlutterwave = $this;
 
 		add_action('init', [ $this, 'setup_hooks' ], 1, 0);
 
@@ -41,6 +43,8 @@ class Flutterwave {
 		add_filter('wooflutter/project/payment/flutterwave/info', [$this, 'info'], 10, 1);
 
         // Add Flutterwave gateway to available payment gateways in WooCommerce
+        add_action('before_woocommerce_init', [$this, 'before_woocommerce_init'], 10, 0);
+        add_action('plugins_loaded', [ $this, 'load_flutterwave_gateway' ], 1, 0);
         add_filter('woocommerce_payment_gateways', [$this, 'add_flutterwave_gateway']);
         // Step 2: Display Flutterwave Payment Option on Checkout Page
         // add_filter('woocommerce_available_payment_gateways', [$this, 'add_flutterwave_gateway']);
@@ -49,6 +53,9 @@ class Flutterwave {
         // add_filter('woocommerce_settings_tabs_array', [$this, 'add_flutterwave_settings_tab'], 50);
         // Add settings fields to the Flutterwave settings tab
         add_action('woocommerce_settings_tabs_flutterwave', [$this, 'output_flutterwave_settings']);
+
+        // add_filter('woocommerce_blocks_checkout_payment_methods', [$this, 'register_payment_block_template']);
+		add_action('woocommerce_blocks_loaded', [$this, 'woocommerce_blocks_loaded'], 10, 0);
 	}
 	public function setup_hooks() {
 		global $wpdb;$this->theTable				= $wpdb->prefix . 'fwp_flutterwave_subscriptions';
@@ -57,7 +64,6 @@ class Flutterwave {
 		$this->successUrl							= site_url('payment/flutterwave/{CHECKOUT_SESSION_ID}/success');
 		$this->cancelUrl							= site_url('payment/flutterwave/{CHECKOUT_SESSION_ID}/cancel');
 
-        include_once(WOOFLUTTER_DIR_PATH . '/inc/widgets/class-woo-flutter.php');
     }
     public function set_api_key($widget) {
         // $this->api_key = $widget->public_key;
@@ -396,6 +402,12 @@ class Flutterwave {
         $encryptedPayload = bin2hex($iv) . $encryptedPayload;
         return $encryptedPayload;
     }
+    public static function register_payment_block_template($templates) {
+        // Register your custom payment method block template file
+        $templates['FlutterWave'] = WOOFLUTTER_DIR_PATH . '/inc/blocks/FlutterWave.php';
+        // print_r($templates);wp_die();
+        return $templates;
+    }
     
 
     public function getAllSubAccounts() {
@@ -549,8 +561,50 @@ class Flutterwave {
 	}
 
 
+    /**
+     * Function to run before woocommerce init
+     */
+    public function before_woocommerce_init() {
+        if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
+                    'cart_checkout_blocks',
+                    __FILE__,
+                    false // true (compatible, default) or false (not compatible)
+                );
+        }
+    }
+    /**
+     * Load Payment gateway scripts after plugins loaded.
+     */
+    public function load_flutterwave_gateway() {
+        include_once(WOOFLUTTER_DIR_PATH . '/inc/widgets/class-wc-gateway-flutter.php');
+    }
+	/**
+	 * Block support PHP class
+	 */
+	public function woocommerce_blocks_loaded() {
+		if(!class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {return;}
+		// here we're including our "gateway block support class"
+		require_once WOOFLUTTER_DIR_PATH . '/inc/blocks/class-wc-flutterwave-gateway-blocks-support.php';
+		// registering the PHP class we have just included
+		add_action(
+			'woocommerce_blocks_payment_method_type_registration',
+			function( \Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
+				$payment_method_registry->register( new Flutterwave_Gateway_Blocks_Support );
+
+				// $payment_method_registry->register(
+                //     \Automattic\WooCommerce\Blocks\Package::container()->get(
+                //         Flutterwave_Gateway_Blocks_Support::class
+                //     )
+                // );
+			}
+		);
+	}
+    /**
+     * Add Flutterwave Payment gateway
+     */
     public function add_flutterwave_gateway($gateways) {
-        $gateways[] = 'WOOFLUTTER\Inc\Woo_Flutter';
+        $gateways[] = 'WOOFLUTTER\Inc\WC_Gateway_Flutter';
         // print_r($gateways);wp_die();
         return $gateways;
     }

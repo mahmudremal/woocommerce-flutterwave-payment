@@ -123,7 +123,6 @@ class I18n {
 		if (true) {
 			// $result = $this->lectoTranslateText([$text], [$translate_to], $translate_from, $language_code);
 			$result = $this->libreTranslateText($text, $translate_to, $translate_from, $language_code);
-			echo $result;
 			if (! $result) {
 				return false;
 			} else {
@@ -287,7 +286,6 @@ class I18n {
 	 * To change elementor text
 	 */
 	public function elementor_widget_render_content($content, $widget) {
-		// echo sprintf('Hi there %s', $content);
 		return $content;
 	}
 	public function isEnglish($string) {

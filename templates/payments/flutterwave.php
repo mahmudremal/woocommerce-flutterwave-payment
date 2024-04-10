@@ -55,7 +55,8 @@ switch ($payment_status) {
         $_messageClass = '_failed';
         break;
 }
-print_r([$trxInfo]);
+// 
+// print_r([$trxInfo]);
 // 
 if ($isVerified) {
     get_header();

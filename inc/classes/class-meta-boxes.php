@@ -45,14 +45,28 @@ class Meta_Boxes {
 	 *
 	 * @return void
 	 */
-	public function custom_meta_box_html($order) {
-		?>
-		Lorem ipsum dolor, sit amet consectetur adipisicing elit. Eaque sapiente debitis excepturi temporibus ex perspiciatis fugit voluptatum, perferendis illo quas libero modi quo ea ducimus veniam voluptate explicabo eos doloremque architecto odio et natus sed necessitatibus repudiandae! Minus assumenda, quisquam libero, repellat harum commodi voluptates quae vero, sint tenetur alias.
-		<?php
+	public function custom_meta_box_html($post) {
 		$order = wc_get_order($post->ID);
 		// 
-		// echo $order->get_checkout_payment_url();
-		// // 
+		?>
+		<table class="payment_table">
+			<thead>
+				<tr>
+					<td class="th">Payment URI</td>
+					<td class="th"><?php echo esc_html($order->get_checkout_payment_url()); ?></td>
+				</tr>
+				<tr>
+					<td class="th">Trx ID#</td>
+					<td class="th"><?php echo esc_html($order->get_transaction_id()); ?></td>
+				</tr>
+				<tr>
+					<td class="th">Data</td>
+					<td class="th"><?php // print_r($order->get_meta_data('_flutterwave_trx_info')); ?></td>
+				</tr>
+			</thead>
+		</table>
+		<?php
+		// 
 		// print_r($order);
 	}
 	/**

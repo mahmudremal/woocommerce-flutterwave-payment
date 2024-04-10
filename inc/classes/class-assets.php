@@ -26,8 +26,8 @@ class Assets {
 	 * @return null
 	 */
 	public function register_styles() {
-		$version = $this->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH . '/public.css');
-		wp_enqueue_style('wooflutter-public', WOOFLUTTER_BUILD_CSS_URI . '/public.css', [], $version, 'all');
+		wp_enqueue_style('wooflutter-public', WOOFLUTTER_BUILD_CSS_URI . '/public.css', [], $this->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH . '/public.css'), 'all');
+		wp_enqueue_style('wooflutter-checkout', WOOFLUTTER_BUILD_CSS_URI . '/checkout.css', [], $this->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH . '/checkout.css'), 'all');
 	}
 	/**
 	 * Enqueue frontend Scripts.
