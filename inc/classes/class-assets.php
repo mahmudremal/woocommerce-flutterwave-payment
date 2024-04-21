@@ -14,8 +14,8 @@ class Assets {
 		$this->setup_hooks();
 	}
 	protected function setup_hooks() {
-		// add_action('wp_enqueue_scripts', [$this, 'register_styles']);
-		// add_action('wp_enqueue_scripts', [$this, 'register_scripts']);
+		add_action('wp_enqueue_scripts', [$this, 'register_styles']);
+		add_action('wp_enqueue_scripts', [$this, 'register_scripts']);
 		
 		// add_action('admin_enqueue_scripts', [$this, 'admin_enqueue_scripts'], 10, 1);
 		// 
@@ -34,9 +34,12 @@ class Assets {
 	 * @return null
 	 */
 	public function register_scripts() {
-		$version = $this->filemtime(WOOFLUTTER_BUILD_JS_DIR_PATH.'/public.js');
-		wp_enqueue_script('wooflutter-public', WOOFLUTTER_BUILD_JS_URI . '/public.js', ['jquery'], $version.'.'.rand(0, 999), true);
+		wp_enqueue_script('wooflutter-public', WOOFLUTTER_BUILD_JS_URI . '/public.js', ['jquery'], $this->filemtime(WOOFLUTTER_BUILD_JS_DIR_PATH.'/public.js'), true);
 		wp_localize_script('wooflutter-public', 'fwpSiteConfig', apply_filters('futurewordpress/project/ctto/javascript/siteconfig', []));
+
+		
+		wp_enqueue_style('wooflutter-dokan', WOOFLUTTER_BUILD_CSS_URI . '/dokan.css', [], $this->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH . '/dokan.css'), 'all');
+		wp_enqueue_script('wooflutter-dokan', WOOFLUTTER_BUILD_JS_URI . '/dokan.js', ['jquery', 'wp-element'], $this->filemtime(WOOFLUTTER_BUILD_JS_DIR_PATH . '/dokan.js'), true);
 	}
 	/**
 	 * Enqueue backend Scripts and stylesheet.

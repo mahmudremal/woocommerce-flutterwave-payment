@@ -5,8 +5,8 @@
  * @package WooFlutter
  */
 
-global $WooFlutter_Flutterwave;
-$settings = WOOFLUTTER_OPTIONS;
+global $WooFlutter_Flutterwave;global $trxStatus;
+$settings = WOOFLUTTER_OPTIONS;global $pageTitle;
 
 $transaction_id     = get_query_var('transaction_id');
 $payment_status     = get_query_var('status');
@@ -45,6 +45,8 @@ $order->update_meta_data('_flutterwave_trx_info', $trxInfo);
 $order->set_transaction_id($transaction_id);
 $order->save();
 
+// wp_set_title('Payment Successful');
+
 switch ($payment_status) {
     case 'successful':
         $_messageIcon = 'fa-check-circle';
@@ -55,10 +57,22 @@ switch ($payment_status) {
         $_messageClass = '_failed';
         break;
 }
-// 
-// print_r([$trxInfo]);
-// 
-if ($isVerified) {
+/*
+add_filter( 'wp_title', function($title) {
+	global $trxStatus;global $pageTitle;
+    $pageTitle = $title;
+	switch ($trxStatus) {
+		case 'successful':
+			$pageTitle = $title = __('Payment successful', 'domain');
+			break;
+		default:
+			$pageTitle = $title = __('Payment failed', 'domain');
+			break;
+	}
+	return $title;
+}, 10, 1);
+*/
+if ($isVerified || true) {
     get_header();
     // echo do_shortcode('[]', true);
     ?>
@@ -89,9 +103,10 @@ if ($isVerified) {
             </div>
         </div>
     </div>
-    <style>._failed{border-bottom:solid 4px red!important}._failed i{color:red!important}._success{box-shadow:0 15px 25px #00000019;padding:45px;width:100%;text-align:center;margin:40px auto;border-bottom:solid 4px #28a745}._success i{font-size:55px;color:#28a745}._success h2{margin-bottom:12px;font-size:40px;font-weight:500;line-height:1.2;margin-top:10px}._success p{margin-bottom:0;font-size:18px;color:#495057;font-weight:500}</style>
+    <style>.message-box {box-shadow:0 15px 25px #00000019;padding:45px;width:100%;text-align:center;margin:40px auto;border-bottom:solid 4px #28a745}._failed{font-size: 55px;border-bottom:solid 4px red!important}._failed i{color:red!important}._success i{font-size:55px;color:#28a745}._success h2{margin-bottom:12px;font-size:40px;font-weight:500;line-height:1.2;margin-top:10px}._success p{margin-bottom:0;font-size:18px;color:#495057;font-weight:500}</style>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" rel="stylesheet" />
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- <script>document.head.querySelectorAll('title').forEach(title => title.innerHTML = `<?php echo esc_attr($pageTitle); ?>`);</script> -->
     <?php
     get_footer();
 } else {

@@ -66,6 +66,18 @@ class Flutterwave {
 
     }
     public function set_api_key($widget) {
+        if ($widget === false) {
+            $widget = wp_parse_args(get_option('woocommerce_flutterwave_settings', [ ]), [
+                'testmode'          => 'no',
+                'test_secret_key'   => '',
+                'live_secret_key'   => '',
+                'live_encript_key'  => '',
+            ]);
+            $isTestMode = ($widget['testmode'] == 'yes');
+            $widget['secret_key'] = $isTestMode?$widget['test_secret_key']:$widget['live_secret_key'];
+            $widget['live_encript_key'] = $isTestMode?$widget['live_encript_key']:$widget['live_encript_key'];
+            $widget = (object) $widget;
+        }
         // $this->api_key = $widget->public_key;
         $this->api_key = $widget->secret_key;
         $this->encryptionKey = $widget->live_encript_key;
@@ -141,39 +153,30 @@ class Flutterwave {
             // 'txref' => '',
             // 'amount' => '',
             // 'currency' => '',
-            'redirect_url' => site_url('/payment/flutterwave/'.$args['txref'].'/status/'),
+            'redirect_url' => site_url('/payment/flutterwave/'.$args['tx_ref'].'/status/'),
             // 'customer_info' => [
             //     'email' => '',
             //     // 'customer_email' => '',
 			// 	'customer_name' => '',
 			// 	'customer_phone' => ''
+            // ],
+            // 'payment_options' => [
+            //     'card' => '1',
+            //     'mobile_money' => '1',
+            //     'bank_transfer' => '1',
+            //     'ussd' => '1',
+            //     'qr' => '1',
+            //     'barter' => '1',
+            //     'bank_account' => '1',
+            //     'credit' => '1',
+            //     'debit' => '1',
+            //     'transfer' => '1'
             // ]
         ]);
         if (isset($args['customer_info'])) {
             $args['customer_info']['email'] = ($args['customer_info']['email'] == '')?get_bloginfo('admin_email'):$args['customer_info']['email'];
         }
         
-
-        // $data = [
-        //     'tx_ref'        => $args['txref'],
-        //     'amount'        => $args['amount'],
-        //     'currency'      => $args['currency'],
-        //     'redirect_url'  => $args['redirect_url'],
-        //     'customer'      => $args['customer_info'],
-        //     'payment_options' => [
-        //         'card' => '1',
-        //         'mobile_money' => '1',
-        //         'bank_transfer' => '1',
-        //         'ussd' => '1',
-        //         'qr' => '1',
-        //         'barter' => '1',
-        //         'bank_account' => '1',
-        //         'credit' => '1',
-        //         'debit' => '1',
-        //         'transfer' => '1'
-        //     ]
-        // ];
-
         $data_string = json_encode($args);
 
         $curl = curl_init();
@@ -198,10 +201,11 @@ class Flutterwave {
         } else {
             $payment_request = json_decode($response, true);
             // print_r([$args, $payment_request]);
-            if($payment_request['status']!=='success') {return false;}
+            if($payment_request['status'] !== 'success') {return false;}
             // Process the payment request and return the result
             return (isset($payment_request['data'])&& isset($payment_request['data']['link']))?$payment_request['data']['link']:false;
         }
+        return false;
     }
     public function createSplitPayment($txref, $amount, $currency, $redirect_url, $customer_info, $sub_account_id, $sub_account_amount) {
         $url = "{$this->base_url}/payments";
@@ -615,6 +619,161 @@ class Flutterwave {
     public function output_flutterwave_settings() {
         // Output the settings fields for the Flutterwave payment gateway
         // Include fields for pausing, unpausing, and setting up the gateway options
+    }
+
+    /**
+     * Transfer an specific amount to flutterwave to another targeted bank account.
+     * 
+     * @since 3.7.10
+     *
+     * @param array $args Arguments to request a transfer
+     *
+     * @return array returned array of transfer request data
+     */
+    public function transfer($args) {
+        $args = wp_parse_args($args, [
+            'account_bank'          => '044',
+            'account_number'        => '00000000000',
+            'amount'                => 5500,
+            'narration'             => sprintf(
+                'Narration not provided for this transfer. This transfer made on %s, using flutterwave woocommerce payment addon.',
+                date('M d, Y H:i')
+            ),
+            'currency'              => 'NGN',
+            'reference'             => '',
+            'callback_url'          => site_url('/payment/flutterwave/'.$args['reference'].'/status/'),
+            'debit_currency'        => 'NGN'
+        ]);
+        $url = "{$this->base_url}/transfers";
+
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, [
+            "Content-Type: application/json",
+            "Authorization: Bearer {$this->api_key}"
+        ]);
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+        curl_close($curl);
+        if ($err) {
+            return false;
+        } else {
+            $payment_status = json_decode($response, true);
+            // print_r([$payment_status]);
+            return $payment_status;
+        }
+    }
+    /**
+     * Get all banks from a country code
+     * 
+     * @since 3.7.10
+     *
+     * @param string $country Get available bank accounts from the country code. Default Nigeria (NG)
+     *
+     * @return array returned array of all available bank accounts.
+     */
+    public function get_banks($country = 'NG') {
+        // $args = wp_parse_args($args, []);
+        $url = "{$this->base_url}/banks/{$country}";
+
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, [
+            "Content-Type: application/json",
+            "Authorization: Bearer {$this->api_key}"
+        ]);
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+        curl_close($curl);
+        if ($err) {
+            return false;
+        } else {
+            $request = json_decode($response, true);
+            if ($request && isset($request['status']) && $request['status'] == 'success') {
+                // print_r($request['data']);wp_die('Remal Mahmud');
+                return (array) $request['data'];
+            }
+            throw new \Exception(__('Error getting bank informations.', 'domain'), 1);
+        }
+    }
+    /**
+     * Get all branch information from a bank id.
+     * 
+     * @since 3.7.10
+     *
+     * @param string $bank_id Get all available braches list form bank ID.
+     *
+     * @return array returned array of all available branches of a bank.
+     */
+    public function get_branches($bank_id = 0) {
+        // $args = wp_parse_args($args, []);
+        $url = "{$this->base_url}/banks/{$bank_id}/branches";
+
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, [
+            "Content-Type: application/json",
+            "Authorization: Bearer {$this->api_key}"
+        ]);
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+        curl_close($curl);
+        if ($err) {
+            throw new \Exception(__('Connection error', 'domain'), 1);
+        } else {
+            $request = json_decode($response, true);
+            // print_r($request);wp_die('Remal Mahmud');
+            if (!$request) {
+                throw new \Exception(__('Invalid gateway response', 'domain'), 1);
+            }
+            if ($request && isset($request['status']) && $request['status'] == 'success') {
+                return (array) $request['data'];
+            } else if (isset($request['status']) && $request['status'] == 'error' && isset($request['message'])) {
+                throw new \Exception($request['message'], 1);
+            }
+            throw new \Exception(__('Error getting bank informations.', 'domain'), 1);
+        }
+    }
+    /**
+     * Get account balance information
+     * 
+     * @since 3.7.10
+     *
+     * @param string $args Args to pass as request parameter.
+     *
+     * @return array returned array of all available bank accounts.
+     */
+    public function balances($bank_id = 0) {
+        // $args = wp_parse_args($args, []);
+        $url = "{$this->base_url}/balances";
+
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, [
+            "Content-Type: application/json",
+            "Authorization: Bearer {$this->api_key}"
+        ]);
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+        curl_close($curl);
+        if ($err) {
+            throw new \Exception(__('Connection error', 'domain'), 1);
+        } else {
+            $request = json_decode($response, true);
+            if (!$request) {
+                throw new \Exception(__('Invalid gateway response', 'domain'), 1);
+            }
+            if ($request && isset($request['status']) && $request['status'] == 'success') {
+                return (array) $request['data'];
+            } else if (isset($request['status']) && $request['status'] == 'error' && isset($request['message'])) {
+                throw new \Exception($request['message'], 1);
+            }
+            throw new \Exception(__('Error getting bank informations.', 'domain'), 1);
+        }
     }
     
 }

@@ -1,0 +1,128 @@
+
+$color_1: black;
+$color_2: orange;
+$color_3: #2B78E4;
+$background-color_1: white;
+$background-color_2: #EEEEEE;
+
+.dokan-dashboard {
+	.dokan-dashboard-content {
+		article.dokan-settings-area {
+			#payment-form {
+				.payment-field-flutterwave {
+					>div.dokan-form-group {
+						.dokan-w3.dokan-control-label[for="dokan_setting"] {
+							display: none;
+						}
+						>div {
+							background-color: $background-color_1;
+							box-shadow: 0 0 5px #bbbbbb;
+							margin-right: 10px;
+							padding: 20px;
+              				width: 100%;
+							div.dokan-form-group {
+								>div {
+									text-align: left;
+									label {
+										color: $color_1;
+										font-weight: bold;
+									}
+									select {
+										padding: 10px 15px;
+										border-radius: 5px;
+										min-height: 50px;
+									}
+								}
+							}
+							div.data-warning {
+								display: flex;
+								box-shadow: 0 0 5px #AAAAAA;
+								padding: 10px;
+								margin-bottom: 10px;
+								div.left-icon-container {
+									display: flex;
+									flex-direction: column;
+									justify-content: center;
+									padding: 5px;
+									i {
+										color: $color_2;
+									}
+								}
+								div.vr-separator {
+									margin: 0 10px;
+									border-left: 1px #dddddd solid;
+								}
+							}
+							.bottom-note {
+								text-align: left;
+								margin-bottom: 2em;
+							}
+							.bottom-actions {
+								background-color: $background-color_2;
+								text-align: left;
+								border-top: 1px #cccccc solid;
+								padding: 20px;
+								margin: -20px;
+								position: relative;
+								button.dokan-btn-danger {
+									position: absolute;
+									right: 20px;
+								}
+								a {
+									margin-left: 10px;
+									text-decoration: none;
+									color: $color_3;
+								}
+							}
+						}
+					}
+					+ .dokan-form-group {
+						.save {
+						opacity: 0;
+						display: none;
+						visibility: hidden;
+						pointer-events: none;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+// 
+.splitacc {
+	&__row {
+		gap: 10px;
+		width: 100%;
+		display: flex;
+		margin: 10px 0;
+		flex-direction: column;
+	}
+	&__single {
+		padding: 10px;
+		display: block;
+		position: relative;
+		border-radius: 10px;
+		border: 1px solid #ddd;
+	}
+	// &__block {}
+	&__trash {
+		top: -10px;
+		width: 30px;
+		height: 30px;
+		right: -10px;
+		padding: 5px;
+		display: flex;
+		cursor: pointer;
+		position: absolute;
+		background: #fff;
+		align-items: center;
+		border-radius: 20px;
+		border: 1px solid #ddd;
+		&__icon {
+			width: 100%;
+			height: 100%;
+			align-self: center;
+		}
+	}
+}

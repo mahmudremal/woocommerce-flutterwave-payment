@@ -1,5 +1,5 @@
 // Stylings
-import './frontend/checkout'
+import './checkout'
 // import './frontend/map';
 
 // Styles

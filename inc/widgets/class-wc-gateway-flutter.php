@@ -494,13 +494,12 @@ class WC_Gateway_Flutter extends \WC_Payment_Gateway {
 	public function process_payment($order_id) {
 		global $WooFlutter_Flutterwave;
 		// if (is_checkout()) {}
-		// print_r($payment_request);wp_die('Remal mahmud (mahmudremal@yahoo.com)', 'Development');
+		// print_r($args);
 		$order = wc_get_order($order_id);
 		// $order->get_transaction_id()
 		$order_data = $order->get_data();
 		$WooFlutter_Flutterwave->set_api_key($this);
-		
-		$payIntend = $WooFlutter_Flutterwave->createPayment([
+		$args = [
 			'tx_ref'			=> $order->get_order_key(),
 			'amount'			=> $order->get_total(),
 			'currency'			=> $order->get_currency(),
@@ -512,14 +511,17 @@ class WC_Gateway_Flutter extends \WC_Payment_Gateway {
 				'address'		=> $order->get_formatted_billing_address()
 			],
 			'customizations'	=> [
-				'title'			=> sprintf('%s Payments', bloginfo('name')),
+				'title'			=> sprintf('%s Payments', get_bloginfo('name')),
 				'logo'			=> WOOFLUTTER_BUILD_URI . '/icons/flutterwave.svg',
 				// 'description'	=> sprintf('', '')
 			],
 			// 'meta'				=> [], // (optional): An object containing any extra information you'd like to store alongside the transaction e.g {consumer_id: 23, consumer_mac: '92a3-912ba-1192a'}
 			// 'payment_options'		=> ['card', 'account', 'banktransfer', 'mpesa', 'mobilemoneyghana', 'mobilemoneyfranco', 'mobilemoneyuganda', 'mobilemoneyrwanda', 'mobilemoneyzambia', 'barter', 'nqr', 'ussd', 'credit'],
 			// 'payment_plan'		=> '', // (optional): The payment plan ID (for when you're collecting a recurring payment) https://developer.flutterwave.com/docs/recurring-payments/payment-plans/
-		]);
+		];
+		// wp_die('Remal mahmud (mahmudremal@yahoo.com)', 'Development');
+		
+		$payIntend = $WooFlutter_Flutterwave->createPayment($args);
 		
 		if ($payIntend && !empty($payIntend)) {
 			// Mark order as processing
@@ -532,11 +534,11 @@ class WC_Gateway_Flutter extends \WC_Payment_Gateway {
 			// Reduce stock levels
 			$order->reduce_order_stock();
 			// Remove cart
-			// WC()->cart->empty_cart();
-			// // Save order
-			// $order->save();
+			WC()->cart->empty_cart();
+			// Save order
+			$order->save();
 			return [
-				'result'   => 'processing', // success
+				'result'   => 'success', // success
 				// 'redirect' => $order->get_checkout_payment_url(true),
 				// 'redirect' => $order->get_transaction_id(true),
 				'redirect' => $payIntend,
