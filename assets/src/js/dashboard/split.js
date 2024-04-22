@@ -1,18 +1,19 @@
-import * as React from "react";
+// import * as React from "react";
 const { useState } = wp.element;
+// import { useState } from "react"
 import swal from 'sweetalert';
 
 
 const loadPreviouses = {count: 0, active: true};
 let repeatableSteps = 0;
 // 
-const Field = (data) => {
-  const row = {
-    index           : data.row?.index??repeatableSteps,
+const Field = ({ row }) => {
+  row = {
+    index           : row?.index??repeatableSteps,
     comission       : 0,
     account_id      : '',
     comission_type  : '',
-    ...data.row
+    ...row
   };
   const [account_id, setAccount_id] = useState(row.account_id);
   const [comission, setComission] = useState(row.comission);
@@ -64,6 +65,7 @@ const Field = (data) => {
         break;
     }
   };
+  console.log(row)
   return (
     <div class="splitacc__single">
       <div class="splitacc__trash">
@@ -96,17 +98,20 @@ const Field = (data) => {
 // 
 const Form = (data) => {
   const [divList, setDivList] = useState([]);
+  window.divList = divList;
   // 
   if (loadPreviouses?.active) {
     const stored = Object.values(data?.stored??[]);
     console.log(stored);
-    stored.forEach(row => {
-      repeatableSteps++;
+    stored.forEach(async (row, index) => {
+      repeatableSteps++;row.index = index;
       setDivList(divList.concat(<Field row={row} />));
+      // setDivList(divList.push(<Field row={row} />));
       loadPreviouses.count++;
       if (stored.length > loadPreviouses.count) {
         loadPreviouses.active = false;
       }
+      console.log(<Field row={row} />, row);
     });
   }
   // 

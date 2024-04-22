@@ -279,20 +279,6 @@ class WC_Gateway_Flutter extends \WC_Payment_Gateway {
 				'default'     => '',
 				'desc_tip'    => true,
 			),
-			'custom_title'       => array(
-				'title'       => __('Model Title', 'wooflutter'),
-				'type'        => 'text',
-				'description' => __('Optional: Text to be displayed as the title of the payment modal.', 'wooflutter'),
-				'default'     => '',
-				'desc_tip'    => true,
-			),
-			'custom_desc'        => array(
-				'title'       => __('Custom Description', 'wooflutter'),
-				'type'        => 'text',
-				'description' => __('Optional: Text to be displayed as a short modal description.', 'wooflutter'),
-				'default'     => '',
-				'desc_tip'    => true,
-			),
 			'custom_logo'        => array(
 				'title'       => __('Custom Logo', 'wooflutter'),
 				'type'        => 'text',
@@ -300,38 +286,6 @@ class WC_Gateway_Flutter extends \WC_Payment_Gateway {
 				'default'     => '',
 				'desc_tip'    => true,
 			),
-			// 'saved_cards'        => array(
-			// 	'title'       => __('Saved Cards', 'wooflutter'),
-			// 	'label'       => __('Enable Payment via Saved Cards', 'wooflutter'),
-			// 	'type'        => 'checkbox',
-			// 	'description' => __('If enabled, users will be able to pay with a saved card during checkout. Card details are saved on Flutterwave servers, not on your store.<br>Note that you need to have a valid SSL certificate installed.', 'wooflutter'),
-			// 	'default'     => 'no',
-			// 	'desc_tip'    => true,
-			//),
-			// 'autocomplete_order' => array(
-			// 	'title'       => __('Autocomplete Order After Payment', 'wooflutter'),
-			// 	'label'       => __('Autocomplete Order', 'wooflutter'),
-			// 	'type'        => 'checkbox',
-			// 	'description' => __('If enabled, the order will be marked as complete after successful payment', 'wooflutter'),
-			// 	'default'     => 'no',
-			// 	'desc_tip'    => true,
-			//),
-			// 'autoconfirm_order' => array(
-			// 	'title'       => __('Auto Confirm', 'wooflutter'),
-			// 	'label'       => __('Autoconfirm Order After successful Payment from checkout page', 'wooflutter'),
-			// 	'type'        => 'checkbox',
-			// 	'description' => __('If enabled, the order will be marked as paid after successful payment', 'wooflutter'),
-			// 	'default'     => 'no',
-			// 	'desc_tip'    => true,
-			//),
-			// 'autosubmit_form' => array(
-			// 	'title'       => __('Auto Submit', 'wooflutter'),
-			// 	'label'       => __('Auto submit form after payment successful. Disable recommanded.', 'wooflutter'),
-			// 	'type'        => 'checkbox',
-			// 	'description' => __('If enabled, all of the form will be submitted by default after successful payment. Disabling this field comes with a possibility to define this auto submit features from single form settings.', 'wooflutter'),
-			// 	'default'     => 'no',
-			// 	'desc_tip'    => true,
-			//),
 		);
 	}
 	/**
