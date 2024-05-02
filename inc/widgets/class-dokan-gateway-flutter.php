@@ -105,7 +105,7 @@ class Dokan_Gateway_Flutterwave extends Gateways {
         return $settings;
     }
     /**
-     * FUnction to process on payment through flutterwave platform.
+     * Function to process on payment through flutterwave platform.
      *
      * @since 3.7.10
      *
@@ -114,15 +114,16 @@ class Dokan_Gateway_Flutterwave extends Gateways {
      * @return array
      */
 	public function process_payment($order_id, $order_data) {
-		// print_r('Hi there');wp_die();
-		$settings = get_option('dokan_payment_gateway_' . $this->id . '_settings', []);
-	
+        // throw new \Exception( 'Payment failed: ');
+		// $settings = get_option('dokan_payment_gateway_' . $this->id . '_settings', []);
+        $settings = apply_filters('wooflutter/wc/get/settings', [], false);
+        // 
 		if ( empty( $settings['public_key'] ) || empty( $settings['secret_key'] ) ) {
 			throw new \Exception( 'Flutterwave Public and Secret Keys are not configured.' );
 		}
-	
+        // 
 		$order = wc_get_order( $order_id ); // Assuming WooCommerce integration
-	
+        // 
 		$amount = $order->get_total();
 		$currency = get_woocommerce_currency();
 		$customer_email = $order->get_billing_email();
@@ -159,7 +160,7 @@ class Dokan_Gateway_Flutterwave extends Gateways {
 			$transaction_id = $response_data['data']['id'];
 	
 			// Update order status in Dokan based on response and transaction ID
-			$order->update_status( 'processing' ); // Replace with appropriate Dokan order status
+			$order->update_status('processing'); // Replace with appropriate Dokan order status
 	
 			// Add order notes with transaction ID
 			$order->add_order_note( 'Flutterwave Transaction ID: ' . $transaction_id );

@@ -118,16 +118,16 @@ class WC_Gateway_Flutter extends \WC_Payment_Gateway {
 		$this->supports = [
 			'refunds',
 			'products',
-			'tokenization',
-			'subscriptions',
-			'multiple_subscriptions',
-			'subscription_cancellation',
-			'subscription_suspension',
-			'subscription_reactivation',
-			'subscription_amount_changes',
-			'subscription_date_changes',
-			'subscription_payment_method_change',
-			'subscription_payment_method_change_customer'
+			// 'tokenization',
+			// 'subscriptions',
+			// 'multiple_subscriptions',
+			// 'subscription_cancellation',
+			// 'subscription_suspension',
+			// 'subscription_reactivation',
+			// 'subscription_amount_changes',
+			// 'subscription_date_changes',
+			// 'subscription_payment_method_change',
+			// 'subscription_payment_method_change_customer'
 		];
 		// Load the form fields.
 		$this->init_form_fields();
@@ -473,10 +473,8 @@ class WC_Gateway_Flutter extends \WC_Payment_Gateway {
 			// 'payment_options'		=> ['card', 'account', 'banktransfer', 'mpesa', 'mobilemoneyghana', 'mobilemoneyfranco', 'mobilemoneyuganda', 'mobilemoneyrwanda', 'mobilemoneyzambia', 'barter', 'nqr', 'ussd', 'credit'],
 			// 'payment_plan'		=> '', // (optional): The payment plan ID (for when you're collecting a recurring payment) https://developer.flutterwave.com/docs/recurring-payments/payment-plans/
 		];
-		// wp_die('Remal mahmud (mahmudremal@yahoo.com)', 'Development');
 		
 		$payIntend = $WooFlutter_Flutterwave->createPayment($args);
-		
 		if ($payIntend && !empty($payIntend)) {
 			// Mark order as processing
 			if ($order->get_total() > 0) {
@@ -502,8 +500,10 @@ class WC_Gateway_Flutter extends \WC_Payment_Gateway {
 			return [
 				'result'		=> 'error',
 				'redirect'		=> false, // $order->get_checkout_payment_url(true),
-				
 			];
+			/**
+			 * Remove order from database because it is failed.
+			 */
 		}
 	}
 	/**

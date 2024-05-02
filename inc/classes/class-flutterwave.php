@@ -31,7 +31,7 @@ class Flutterwave {
 		$this->encryptionKey  = isset($this->settings['encryptionkey'])?$this->settings['encryptionkey']:false;
         $this->is_test_mode = true; // WOOFLUTTER_TEST_MODE;
 
-		add_action('init', [ $this, 'setup_hooks' ], 1, 0);
+		add_action('init', [ $this, 'on_init' ], 1, 0);
 
         add_filter('wooflutter/project/payment/getallsubaccounts', [$this, 'getAllSubAccounts'], 10, 0);
         
@@ -57,8 +57,9 @@ class Flutterwave {
         // add_filter('woocommerce_blocks_checkout_payment_methods', [$this, 'register_payment_block_template']);
 		add_action('woocommerce_blocks_loaded', [$this, 'woocommerce_blocks_loaded'], 10, 0);
 	}
-	public function setup_hooks() {
+	public function on_init() {
 		global $wpdb;$this->theTable				= $wpdb->prefix . 'fwp_flutterwave_subscriptions';
+        $this->settings                             = apply_filters('wooflutter/wc/get/settings', [], false);
 		$this->productID							= 'prod_NJlPpW2S6i75vM';
 		$this->lastResult							= false;$this->userInfo = false;
 		$this->successUrl							= site_url('payment/flutterwave/{CHECKOUT_SESSION_ID}/success');
@@ -67,7 +68,7 @@ class Flutterwave {
     }
     public function set_api_key($widget) {
         if ($widget === false) {
-            $widget = wp_parse_args(get_option('woocommerce_flutterwave_settings', [ ]), [
+            $widget = wp_parse_args(apply_filters('wooflutter/wc/get/settings', [], false), [
                 'testmode'          => 'no',
                 'test_secret_key'   => '',
                 'live_secret_key'   => '',
@@ -81,6 +82,39 @@ class Flutterwave {
         // $this->api_key = $widget->public_key;
         $this->api_key = $widget->secret_key;
         $this->encryptionKey = $widget->live_encript_key;
+    }
+    public function execute($endpoint, $args = false) {
+        $url = "{$this->base_url}/{$endpoint}";
+
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, [
+            "Content-Type: application/json",
+            "Authorization: Bearer {$this->api_key}"
+        ]);
+        if ($args && !empty($args)) {
+            $data_string = json_encode($args);
+            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $data_string);
+        }
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+        curl_close($curl);
+        if ($err) {
+            throw new \Exception(__('Connection error', 'domain'), 1);
+        } else {
+            $response = json_decode($response, true);
+            if (!$response) {
+                throw new \Exception(__('Invalid gateway response', 'domain'), 1);
+            }
+            if ($response && isset($response['status'])) {
+                if ($response['status'] != 'success' && isset($response['message'])) {
+                    throw new \Exception($response['message'], 1);
+                }
+            }
+            return $response;
+        }
     }
 	public function getToken() {
         // Check if a token is already stored in the database or cache
@@ -176,36 +210,18 @@ class Flutterwave {
         if (isset($args['customer_info'])) {
             $args['customer_info']['email'] = ($args['customer_info']['email'] == '')?get_bloginfo('admin_email'):$args['customer_info']['email'];
         }
-        
-        $data_string = json_encode($args);
-
-        $curl = curl_init();
-
-        curl_setopt($curl, CURLOPT_URL, "{$this->base_url}/payments");
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_setopt($curl, CURLOPT_POSTFIELDS, $data_string);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-            "Content-Type: application/json",
-            "Authorization: Bearer {$this->api_key}" // $this->getToken()
-       ));
-
-        $response = curl_exec($curl);
-        $error = curl_error($curl);
-
-        curl_close($curl);
-
-        if ($error) {
-            // Handle error case
-            return null;
-        } else {
-            $payment_request = json_decode($response, true);
-            // print_r([$args, $payment_request]);
-            if($payment_request['status'] !== 'success') {return false;}
-            // Process the payment request and return the result
-            return (isset($payment_request['data'])&& isset($payment_request['data']['link']))?$payment_request['data']['link']:false;
+        try {
+            $response = $this->execute("payments", $args);
+            if ($response && isset($response['status'])) {
+                if ($response['status'] == 'success') {
+                    return (isset($response['data']) && isset($response['data']['link']))?$response['data']['link']:false;
+                }
+            }
+            throw new \Exception(__('Error getting payment intend link.', 'domain'), 1);
+        } catch (\Exception $th) {
+            //throw $th;
+            return false;
         }
-        return false;
     }
     public function createSplitPayment($txref, $amount, $currency, $redirect_url, $customer_info, $sub_account_id, $sub_account_amount) {
         $url = "{$this->base_url}/payments";
@@ -251,48 +267,6 @@ class Flutterwave {
 
             // Process the payment request and return the result
             return $payment_request;
-        }
-    }
-    public function processCardPayment__($args) {
-        $args = wp_parse_args($args, [
-            'amount'                => '',
-            'currency'              => '',
-            'token'                 => [],
-            'customer_email'        => get_bloginfo('admin_email'),
-            'redirect_url'			=> site_url('/payment/flutterwave/'.$args['tx_ref'].'/status/'),
-        ]);
-        $args['token'] = wp_parse_args($args['token'], [
-            'card_number'      => '',
-            'expiry_month'     => '',
-            'expiry_year'      => '',
-            'cvv'              => ''
-        ]);
-        $data_string = json_encode($args);
-        $curl = curl_init();
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => "{$this->base_url}/payments",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_CUSTOMREQUEST => "POST",
-            CURLOPT_POSTFIELDS => $data_string,
-            CURLOPT_HTTPHEADER => [
-                "Content-Type: application/json",
-                "Authorization: Bearer {$this->api_key}"
-            ],
-       ));
-    
-        $response = curl_exec($curl);
-        $error = curl_error($curl);
-    
-        curl_close($curl);
-    
-        if ($error) {
-            // Handle cURL error
-            return null;
-        } else {
-            $payment_request = json_decode($response, true);
-            if($payment_request['status']!=='success') {return false;}
-            // Process the payment request and return the result
-            return (isset($payment_request['data'])&& isset($payment_request['data']['link']))?$payment_request['data']['link']:false;
         }
     }
     public function processCardPayment($args) {
@@ -488,28 +462,17 @@ class Flutterwave {
      * @return bool Return an false if transection not found of any error happens.
      */
     public function info($transaction_id) {
-        $url = "{$this->base_url}/transactions/{$transaction_id}/verify";
-
-        $curl = curl_init();
-
-        curl_setopt($curl, CURLOPT_URL, $url);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-            "Content-Type: application/json",
-            "Authorization: Bearer {$this->api_key}"
-       ));
-
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
-
-        curl_close($curl);
-
-        if ($err) {
+        try {
+            $response = $this->execute("transactions/{$transaction_id}/verify", $args);
+            if ($response && isset($response['status'])) {
+                if ($response['status'] == 'success') {
+                    return (array) $response['data'];
+                }
+            }
+            throw new \Exception(__('Error getting transection info.', 'domain'), 1);
+        } catch (\Exception $th) {
+            //throw $th;
             return false;
-        } else {
-            $payment_status = json_decode($response, true);
-            // print_r([$payment_status]);
-            return $payment_status;
         }
     }
     /**
@@ -531,9 +494,9 @@ class Flutterwave {
      * @return string String value of the payment status
      */
 	public function status($transaction_id) {
-        $payment_status = $this->info($transaction_id);
-        // print_r([$payment_status, $this->api_key]);
-        return (isset($payment_status['data']) && isset($payment_status['data']['status']))?$payment_status['data']['status']:false;
+        $info = $this->info($transaction_id);
+        // print_r([$info, $this->api_key]);
+        return ($info && isset($info['status']))?$info['status']:false;
     }
 	
 	public function rewriteRules($rules) {
@@ -632,36 +595,29 @@ class Flutterwave {
      */
     public function transfer($args) {
         $args = wp_parse_args($args, [
-            'account_bank'          => '044',
-            'account_number'        => '00000000000',
-            'amount'                => 5500,
+            // 'account_bank'          => '044',
+            // 'account_number'        => '00000000000',
+            // 'amount'                => 5500,
             'narration'             => sprintf(
                 'Narration not provided for this transfer. This transfer made on %s, using flutterwave woocommerce payment addon.',
                 date('M d, Y H:i')
             ),
-            'currency'              => 'NGN',
-            'reference'             => '',
+            // 'currency'              => 'NGN',
+            // 'reference'             => '',
             'callback_url'          => site_url('/payment/flutterwave/'.$args['reference'].'/status/'),
-            'debit_currency'        => 'NGN'
+            // 'debit_currency'        => 'NGN'
         ]);
-        $url = "{$this->base_url}/transfers";
-
-        $curl = curl_init();
-        curl_setopt($curl, CURLOPT_URL, $url);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, [
-            "Content-Type: application/json",
-            "Authorization: Bearer {$this->api_key}"
-        ]);
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
-        curl_close($curl);
-        if ($err) {
+        try {
+            $response = $this->execute("transfers", $args);
+            if ($response && isset($response['status'])) {
+                if ($response['status'] == 'success') {
+                    return (array) $response;
+                }
+            }
+            throw new \Exception(__('Error getting banks list.', 'domain'), 1);
+        } catch (\Exception $th) {
+            //throw $th;
             return false;
-        } else {
-            $payment_status = json_decode($response, true);
-            // print_r([$payment_status]);
-            return $payment_status;
         }
     }
     /**
@@ -674,28 +630,17 @@ class Flutterwave {
      * @return array returned array of all available bank accounts.
      */
     public function get_banks($country = 'NG') {
-        // $args = wp_parse_args($args, []);
-        $url = "{$this->base_url}/banks/{$country}";
-
-        $curl = curl_init();
-        curl_setopt($curl, CURLOPT_URL, $url);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, [
-            "Content-Type: application/json",
-            "Authorization: Bearer {$this->api_key}"
-        ]);
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
-        curl_close($curl);
-        if ($err) {
-            return false;
-        } else {
-            $request = json_decode($response, true);
-            if ($request && isset($request['status']) && $request['status'] == 'success') {
-                // print_r($request['data']);wp_die('Remal Mahmud');
-                return (array) $request['data'];
+        try {
+            $response = $this->execute("banks/{$country}");
+            if ($response && isset($response['status'])) {
+                if ($response['status'] == 'success') {
+                    return (array) $response['data'];
+                }
             }
-            throw new \Exception(__('Error getting bank informations.', 'domain'), 1);
+            throw new \Exception(__('Error getting banks list.', 'domain'), 1);
+        } catch (\Exception $th) {
+            //throw $th;
+            return false;
         }
     }
     /**
@@ -708,33 +653,17 @@ class Flutterwave {
      * @return array returned array of all available branches of a bank.
      */
     public function get_branches($bank_id = 0) {
-        // $args = wp_parse_args($args, []);
-        $url = "{$this->base_url}/banks/{$bank_id}/branches";
-
-        $curl = curl_init();
-        curl_setopt($curl, CURLOPT_URL, $url);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, [
-            "Content-Type: application/json",
-            "Authorization: Bearer {$this->api_key}"
-        ]);
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
-        curl_close($curl);
-        if ($err) {
-            throw new \Exception(__('Connection error', 'domain'), 1);
-        } else {
-            $request = json_decode($response, true);
-            // print_r($request);wp_die('Remal Mahmud');
-            if (!$request) {
-                throw new \Exception(__('Invalid gateway response', 'domain'), 1);
+        try {
+            $response = $this->execute("banks/{$bank_id}/branches");
+            if ($response && isset($response['status'])) {
+                if ($response['status'] == 'success') {
+                    return (array) $response['data'];
+                }
             }
-            if ($request && isset($request['status']) && $request['status'] == 'success') {
-                return (array) $request['data'];
-            } else if (isset($request['status']) && $request['status'] == 'error' && isset($request['message'])) {
-                throw new \Exception($request['message'], 1);
-            }
-            throw new \Exception(__('Error getting bank informations.', 'domain'), 1);
+            throw new \Exception(__('Error getting branches.', 'domain'), 1);
+        } catch (\Exception $th) {
+            //throw $th;
+            return false;
         }
     }
     /**
@@ -742,37 +671,29 @@ class Flutterwave {
      * 
      * @since 3.7.10
      *
-     * @param string $args Args to pass as request parameter.
+     * @param string $currency Currency code string on uppercase letter.
      *
-     * @return array returned array of all available bank accounts.
+     * @return bool|Exception|array returned array of all available currencies balances or specific currency balance.
      */
-    public function balances($bank_id = 0) {
+    public function balances($currency = false) {
         // $args = wp_parse_args($args, []);
-        $url = "{$this->base_url}/balances";
-
-        $curl = curl_init();
-        curl_setopt($curl, CURLOPT_URL, $url);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, [
-            "Content-Type: application/json",
-            "Authorization: Bearer {$this->api_key}"
-        ]);
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
-        curl_close($curl);
-        if ($err) {
-            throw new \Exception(__('Connection error', 'domain'), 1);
-        } else {
-            $request = json_decode($response, true);
-            if (!$request) {
-                throw new \Exception(__('Invalid gateway response', 'domain'), 1);
-            }
-            if ($request && isset($request['status']) && $request['status'] == 'success') {
-                return (array) $request['data'];
-            } else if (isset($request['status']) && $request['status'] == 'error' && isset($request['message'])) {
-                throw new \Exception($request['message'], 1);
+        try {
+            $response = $this->execute('balances');
+            if ($response && isset($response['status'])) {
+                if ($response['status'] == 'success') {
+                    $balances = [];
+                    foreach ((array) $response['data'] as $index => $row) {
+                        $row['index']                   = $index;
+                        $balances[$row['currency']]     = $row;
+                        if ($currency && $row['currency'] == $currency) {return $row;}
+                    }
+                    return $balances;
+                }
             }
             throw new \Exception(__('Error getting bank informations.', 'domain'), 1);
+        } catch (\Exception $th) {
+            //throw $th;
+            return false;
         }
     }
     

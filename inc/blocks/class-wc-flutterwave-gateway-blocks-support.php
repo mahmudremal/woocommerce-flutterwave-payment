@@ -97,7 +97,7 @@ final class Flutterwave_Gateway_Blocks_Support extends AbstractPaymentMethodType
 			'title'			=> $this->get_setting('title'),
 			'supports'		=> $this->get_supported_features(),
 			'description'	=> $this->get_setting('description'),
-			'build_dir'			=> WOOFLUTTER_BUILD_URI,
+			'build_dir'		=> WOOFLUTTER_BUILD_URI,
 		];
 	}
 }

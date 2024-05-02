@@ -34,6 +34,7 @@ class Dokan {
         add_filter('dokan_withdraw_is_valid_request', [$this, 'dokan_withdraw_is_valid_request'], 10, 2);
 
         add_action('dokan_store_profile_saved', [$this, 'dokan_store_profile_saved'], 10, 2);
+        // add_action('dokan_withdraw_request_approved', [$this, 'dokan_withdraw_request_approved'], 10, 1);
     }
     /**
      * Loaded dokan custom payment method after loaded all plugins.
@@ -87,7 +88,7 @@ class Dokan {
      * @return string|void
      */
     public function dokan_withdraw_method_flutterwave($store_settings) {
-        $email = isset($store_settings['payment']['flutterwave']['email']) ? esc_attr($store_settings['payment']['flutterwave']['email']) : '';
+        $email = isset($store_settings['payment'][$this->id]['email']) ? esc_attr($store_settings['payment'][$this->id]['email']) : '';
         include apply_filters('dokan_withdraw_method_flutterwave_template', WOOFLUTTER_DIR_PATH . '/templates/payments/vendor-settings.php', $store_settings);
     }
     /**
@@ -189,7 +190,7 @@ class Dokan {
      * @return string Flutterwave heading, or default heading.
      */
     public function dokan_withdraw_method_settings_title($heading, $slug) {
-        if ($slug == 'flutterwave') {
+        if ($slug == $this->id) {
             $heading = __('Flutterwave Payment Settings', 'wooflutter');
         }
         return $heading;
@@ -303,30 +304,48 @@ class Dokan {
      */
     public function dokan_withdraw_is_valid_request($to_continue, $args) {
         global $WooFlutter_Flutterwave;
-        if (isset($args['method']) && $args['method'] == $this->id) {
+        if (isset($args['method']) && $args['method'] == $this->id && isset($args['id']) && $args['id'] > 0 && isset($_REQUEST['status']) && $_REQUEST['status'] == 'approved') {
+            $currency = isset($args['currency'])?strtoupper($args['currency']):'NGN';
             if ($args['amount'] < 50) {
                 return new \WP_Error('dokan_withdraw_insufficient_amount', sprintf(
                     __('Insufficient amount requested. Minimum amount to transfer is %d.', 'domain'),
                     50
                 ));
             }
-            // print_r($args);
-            // return new \WP_Error('dokan_withdraw_insufficient_amount', sprintf(
-            //     __('Insufficient amount requested. Minimum amount to transfer is %d.', 'domain'),
-            //     50
-            // ));
+            // Setup api keys on flutterwave instance
             $WooFlutter_Flutterwave->set_api_key(false);
+            $balance = $WooFlutter_Flutterwave->balances($currency);
+            if (!$balance || is_wp_error($balance)) {
+                return new \WP_Error('dokan_withdraw_invalid_balance', __('Error while trying to get account balance. Please contact to the support or developer.', 'domain'));
+            }
+            if (isset($balance['available_balance']) && $balance['available_balance'] < $args['amount']) {
+                return new \WP_Error('dokan_withdraw_insufficient_balance', sprintf(
+                    __('Insufficient balance. Minimum balance to transfer is %s. Your currenct account balance is %s', 'domain'),
+                    number_format_i18n(50, 3), number_format_i18n((float) $balance['available_balance'], 3)
+                ));
+            }
+            
+            
+            // 
+            $userArgs = get_user_meta($args['user_id'], 'dokan_profile_settings', true);
+            $seller = ($userArgs && isset($userArgs['payment']) && isset($userArgs['payment'][$this->id]))?(array) $userArgs['payment'][$this->id]:[];
+            // 
+            // print_r($seller);wp_die('Remal mahmud (mahmudremal@yahoo.com)', 'Development');
+            // 
             $payOut = [
-                'account_bank' => '044',
-                'account_number' => '0690000040',
-                'amount' => 5500,
-                'narration' => 'Akhlm Pstmn Trnsfr xx007',
-                'currency' => 'NGN',
-                'reference' => 'akhlm-pstmnpyt-rfxx007_PMCKDU_1',
-                'callback_url' => 'https://www.flutterwave.com/ng/',
-                'debit_currency' => 'NGN'
+                'account_bank' => $seller['account_bank']??'',
+                'account_number' => $seller['account_number']??'',
+                'amount' => (int) $args['amount'] * 100,
+                'narration' => (isset($args['note']) && !empty(trim($args['note'])))?$args['note']:__('N/A', 'wooflutter'),
+                'currency' => $currency,
+                'reference' => sprintf('withdraw id %d', $args['id']),
+                'debit_currency' => $currency
             ];
-            // $WooFlutter_Flutterwave->transfer($payOut);
+            $transfer = $WooFlutter_Flutterwave->transfer($payOut);
+            if ($transfer && isset($transfer['status']) && $transfer['status'] == 'success') {
+                return $to_continue;
+            }
+            return new \WP_Error('dokan_withdraw_failed_transfer', __('Transfer request failed', 'domain'));
         }
         return $to_continue;
     }
@@ -338,4 +357,13 @@ class Dokan {
         // }
         // update_user_meta( $store_id, 'dokan_profile_settings', $dokan_settings );
     }
+    /**
+     * Fired after withdraw approve request triggired.
+     * 
+     * @param Object|Withdraw $withdraw Instance of dokan Withdraw class
+     * 
+     * @return null;
+     */
+    public function dokan_withdraw_request_approved($withdraw) {}
+    // 
 }

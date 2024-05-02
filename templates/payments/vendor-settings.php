@@ -26,7 +26,7 @@ $WooFlutter_Flutterwave->set_api_key(false);
         </div>
     <?php endif; ?>
     
-    <div class="dokan-form-group">
+    <!-- <div class="dokan-form-group">
         <div>
             <label for="test_mode"><?php echo esc_html(__('Test Mode', 'domain')); ?> </label>
         </div>
@@ -34,15 +34,15 @@ $WooFlutter_Flutterwave->set_api_key(false);
             <input id="test_mode" name="settings[flutterwave][test_mode]" value="yes" class="dokan-form-control" type="checkbox" <?php echo esc_attr(isset($flutterwave['test_mode'])?'checked':''); ?>>
             <span class="error-container"></span>
         </div>
-    </div>
+    </div> -->
 
     <?php
     $fields = [
-        'live_public_key'   => __('Live public key', 'domain'),
-        'live_secret_key'   => __('Live secret key', 'domain'),
-        'live_encript_key'  => __('Live encript key', 'domain'),
-        'test_public_key'   => __('Test public key', 'domain'),
-        'test_secret_key'   => __('Test secret key', 'domain'),
+        // 'live_public_key'   => __('Live public key', 'domain'),
+        // 'live_secret_key'   => __('Live secret key', 'domain'),
+        // 'live_encript_key'  => __('Live encript key', 'domain'),
+        // 'test_public_key'   => __('Test public key', 'domain'),
+        // 'test_secret_key'   => __('Test secret key', 'domain'),
         'account_bank'      => __('Select Bank', 'domain'),
         'account_number'    => __('Account number', 'domain'),
         'split_accounts'    => __('Split Accounts', 'domain'),
@@ -92,20 +92,25 @@ $WooFlutter_Flutterwave->set_api_key(false);
                 <?php
                 break;
             case 'split_accounts':
-                $splits = isset($flutterwave[$field_key])?(array) $flutterwave[$field_key]:[];
-                ?>
-                <div class="dokan-form-group">
-                    <div>
-                        <label for="<?php echo esc_attr($field_key); ?>"><?php echo esc_html($field_title); ?> </label>
-                    </div>
-                    <div class="dokan-w10">
-                        <div class="dokan-form-card p2">
-                            <div id="split_root" data-splits="<?php echo esc_attr(json_encode($splits)); ?>"></div>
+                /**
+                 * Muted this function to avoid getting client informations.
+                 */
+                if (false) :
+                    $splits = isset($flutterwave[$field_key])?(array) $flutterwave[$field_key]:[];
+                    ?>
+                    <div class="dokan-form-group">
+                        <div>
+                            <label for="<?php echo esc_attr($field_key); ?>"><?php echo esc_html($field_title); ?> </label>
                         </div>
-                        <span class="error-container"></span>
+                        <div class="dokan-w10">
+                            <div class="dokan-form-card p2">
+                                <div id="split_root" data-splits="<?php echo esc_attr(json_encode($splits)); ?>"></div>
+                            </div>
+                            <span class="error-container"></span>
+                        </div>
                     </div>
-                </div>
-                <?php
+                    <?php
+                endif;
                 break;
             default:
                 switch ($field_key) {

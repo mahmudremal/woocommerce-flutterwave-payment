@@ -83,14 +83,14 @@ const Content = ( props ) => {
         });
 
         const unsubscribePaymentProcessing = onPaymentSetup((response) => {
-            console.log('Payment processing:', response);
+            // console.log('Payment processing:', response);
             // Your custom logic for handling payment processing
 			removePaymentIntend(); // Remove payment intend overaly if exists.
 			paymentIntend = document.createElement('div');
 			paymentIntend.classList.add('flutterwave__checkout');
 			paymentIntend.classList.add('flutterwave__loading');
 			paymentIntend.style.backgroundImage = `url("${settings.build_dir}/icons/flutterwave-full.svg")`;
-			console.log(paymentIntend)
+			// console.log(paymentIntend)
 			document.body.appendChild(paymentIntend);
 			intervalPaymentIntend = setInterval(() => {
 				removePaymentIntend(); // Remove payment intend overaly if exists.
@@ -108,7 +108,7 @@ const Content = ( props ) => {
     }, [eventRegistration, emitResponse]);
 	return Content_HTML();
 };
-console.log('Initialize checkout method addon');
+// console.log('Initialize checkout method addon');
 registerPaymentMethod( {
 	paymentMethodId: 'flutterwave',
 	name: "flutterwave",
