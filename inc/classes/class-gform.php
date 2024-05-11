@@ -117,6 +117,11 @@ class Gform {
 
 		add_filter('gpi_approved_payment_statuses', [$this, 'gpi_approved_payment_statuses'], 10, 1);
 		add_filter('gpi_query', [$this, 'gpi_query_hook_payment_status'], 10, 2);
+
+		
+		add_action('wp_ajax_gflutter/project/get/email/template', [$this, 'getEmailTemplate'], 10, 0);
+		add_action('wp_ajax_gflutter/project/update/email/template', [$this, 'updateEmailTemplate'], 10, 0);
+
 	}
 	public function wp_init() {
 		$entry_id = 64;
@@ -1803,5 +1808,23 @@ class Gform {
 		return $query;
 	}
 
+	
+	public function getEmailTemplate() {
+		$json = [
+			'hooks' => ['getEmailTemplate'],
+			'template' => preg_replace('/[\x00-\x1F\x80-\xFF]/', '', stripslashes(html_entity_decode(
+				get_option('gform-flutterwave-reminder-template', '')
+			)))
+		];
+		
+		wp_send_json_success($json);
+	}
+	public function updateEmailTemplate() {
+		$json = [
+			'hooks' => ['updateEmailTemplate'],
+			'template' => update_option('gform-flutterwave-reminder-template', $_POST['template'])
+		];
+		wp_send_json_success($json);
+	}
 
 }

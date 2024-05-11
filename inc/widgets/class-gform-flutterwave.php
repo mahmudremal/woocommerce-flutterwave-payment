@@ -83,30 +83,61 @@ class GFFlutterWave extends \GFPaymentAddOn {
 	 * @return array $styles
 	 */
 	public function styles() {
-		$min = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG || isset($_GET['gform_debug']) ? '' : '.min';
-		$styles = array(
-			array(
-				'handle'  => 'gform_flutterwave_form_settings_css',
-				'src'     => $this->get_base_url() . "/css/form_settings{$min}.css",
-				'version' => $this->_version,
-				'enqueue' => array(
-					array('admin_page' => array('form_settings')),
-				),
-			),
-		);
+		// $min = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG || isset($_GET['gform_debug']) ? '' : '.min';
+		$styles = [
+            [
+                'handle'  => 'gform_flutterwave_form_settings_css',
+				'src'     => WOOFLUTTER_BUILD_CSS_URI . "/gform_admin.css", // {$min}
+				'version' => apply_filters('wooflutter/function/filemtime', apply_filters('wooflutter/path/fix/slashes', WOOFLUTTER_BUILD_CSS_DIR_PATH . "/gform_admin.css")),
+				'enqueue' => [
+                    [
+                        'admin_page' => ['form_settings', 'plugin_settings'],
+                        'tab'        => $this->_slug
+                    ],
+                ],
+            ],
+        ];
 		return array_merge(parent::styles(), $styles);
+	}
+	/**
+	 * Register needed scripts.
+	 *
+	 * @since  3.2
+	 *
+	 * @return array $scripts
+	 */
+	public function scripts() {
+		// $min = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG || isset($_GET['gform_debug']) ? '' : '.min';
+		$scripts = [
+            [
+                'handle'  => 'gform_flutterwave_form_settings_js',
+				'src'     => WOOFLUTTER_BUILD_JS_URI . "/gform_admin.js", // {$min}
+				'version' => apply_filters('wooflutter/function/filemtime', apply_filters('wooflutter/path/fix/slashes', WOOFLUTTER_BUILD_JS_DIR_PATH . "/gform_admin.js")),
+				'enqueue' => [
+                    [
+                        'admin_page' => ['form_settings', 'plugin_settings'], // form_editor, form_settings, plugin_settings, plugin_page, entry_view, entry_detail, results, block_editor
+                        'tab'        => $this->_slug
+                    ],
+                ],
+            ],
+        ];
+        // 
+        // wp_localize_script('gform_flutterwave_form_settings_js', 'fwpSiteConfig', apply_filters('gflutter/project/javascript/siteconfig', []));
+		return array_merge(parent::scripts(), $scripts);
 	}
 	public function plugin_settings_fields() {
 		$description = '
 			<p style="text-align: left;">' .
 			esc_html__('Gravity Forms requires IPN to be enabled on your FlutterWave account. Follow the following steps to confirm IPN is enabled.', 'wooflutter') .
 			'</p>
+			<!--
 			<ul>
 				<li>' . sprintf(esc_html__('Navigate to your FlutterWave %sIPN Settings page.%s', 'wooflutter'), '<a href="https://www.flutterwave.com/us/cgi-bin/webscr?cmd=_profile-ipn-notify" target="_blank">', '</a>') . '</li>' .
-			'<li>' . esc_html__('If IPN is already enabled, you will see your current IPN settings along with a button to turn off IPN. If that is the case, just check the confirmation box below and you are ready to go!', 'wooflutter') . '</li>' .
-			'<li>' . esc_html__("If IPN is not enabled, click the 'Choose IPN Settings' button.", 'wooflutter') . '</li>' .
-			'<li>' . sprintf(esc_html__('Click the box to enable IPN and enter the following Notification URL: %s', 'wooflutter'), '<strong>' . esc_url($this->get_callback_url()) . '</strong>') . '</li>' .
+				'<li>' . esc_html__('If IPN is already enabled, you will see your current IPN settings along with a button to turn off IPN. If that is the case, just check the confirmation box below and you are ready to go!', 'wooflutter') . '</li>' .
+				'<li>' . esc_html__("If IPN is not enabled, click the 'Choose IPN Settings' button.", 'wooflutter') . '</li>' .
+				'<li>' . sprintf(esc_html__('Click the box to enable IPN and enter the following Notification URL: %s', 'wooflutter'), '<strong>' . esc_url($this->get_callback_url()) . '</strong>') . '</li>' .
 			'</ul>
+			-->
 				<br/>';
 		return [
             [
@@ -121,13 +152,114 @@ class GFFlutterWave extends \GFPaymentAddOn {
                             ['label' => esc_html__('Confirm that you have configured your FlutterWave account to enable IPN', 'wooflutter'), 'name' => 'gf_flutterwave_configured'],
                         ]
                     ],
+                    [
+                        'name'    => 'gf_flutterwave_testMode',
+						'label'   => esc_html__('Test mode', 'wooflutter'),
+						'type'    => 'checkbox',
+						'choices' => [
+                            ['label' => esc_html__('Check if you want to enable test mode.', 'wooflutter'), 'name' => 'gf_flutterwave_testMode'],
+                        ]
+                    ],
+                    [
+                        'name'    => 'gf_flutterwave_publickey',
+						'label'   => esc_html__('Public Key', 'wooflutter'),
+						'type'    => 'text',
+						'tooltip'  => '<h6>' . esc_html__('Public Key', 'wooflutter') . '</h6>' . esc_html__('Enter your Public Key, if you do not have a key you can register for one at the provided link.', 'wooflutter')
+                    ],
+                    [
+                        'name'    => 'gf_flutterwave_secretkey',
+						'label'   => esc_html__('Secret Key', 'wooflutter'),
+						'type'    => 'text',
+						'tooltip'  => '<h6>' . esc_html__('Secret Key', 'wooflutter') . '</h6>' . esc_html__('Enter your Secret Key, if you do not have a key you can register for one at the provided link.', 'wooflutter')
+                    ],
+                    [
+                        'name'    => 'gf_flutterwave_encryptionkey',
+						'label'   => esc_html__('Encryption Key', 'wooflutter'),
+						'type'    => 'text',
+						'tooltip'  => '<h6>' . esc_html__('Encryption Key', 'wooflutter') . '</h6>' . esc_html__('Enter your Encryption Key, if you do not have a key you can register for one at the provided link.', 'wooflutter')
+                    ],
+                    [
+                        'name'    => 'gf_flutterwave_statusBtnLink',
+						'label'   => esc_html__('Success page link', 'wooflutter'),
+						'type'    => 'select',
+                        'choices' => [
+                            ['label' => __('Form page', 'wooflutter'), 'name' => 'form'],
+                            ['label' => __('Home page', 'wooflutter'), 'name' => 'home'],
+                        ],
+						'tooltip'  => '<h6>' . esc_html__('Success page link', 'wooflutter') . '</h6>' . esc_html__('Select a Success page link. Payment returned status page button link. Set homepage to setup Back to home like, site homepage link. Selecting form will set button link form entry screen link.', 'wooflutter')
+                    ],
+                    [
+                        'name'    => 'gf_flutterwave_amountZeroMsg',
+						'label'   => esc_html__('Amount required message', 'wooflutter'),
+						'type'    => 'text',
+						'tooltip'  => '<h6>' . esc_html__('Amount required message', 'wooflutter') . '</h6>' . esc_html__('This message will be the default message on settings field if the calculated amount is zero.
+                        ', 'wooflutter')
+                    ],
+                    [
+                        'name'    => 'gf_flutterwave_paymentSuccess',
+						'label'   => esc_html__('Success status', 'wooflutter'),
+						'type'    => 'text',
+						'tooltip'  => '<h6>' . esc_html__('Success status', 'wooflutter') . '</h6>' . esc_html__('Give here a long success message that will be display on payment success page. With the confirmation message that the form submitted successfully.', 'wooflutter')
+                    ],
+                    [
+                        'name'    => 'gf_flutterwave_paymentFailed',
+						'label'   => esc_html__('Failed status', 'wooflutter'),
+						'type'    => 'text',
+						'tooltip'  => '<h6>' . esc_html__('Failed status', 'wooflutter') . '</h6>' . esc_html__('Give here a long error message that will be display on payment failed/cancelled/denaid status. With the confirmation message that the form didn\'t submitted.', 'wooflutter')
+                    ],
+                    [
+                        'name'    => 'gf_flutterwave_paymentReminderSubject',
+						'label'   => esc_html__('Mail reminder subject', 'wooflutter'),
+						'type'    => 'text',
+						'tooltip'  => '<h6>' . esc_html__('Mail reminder subject', 'wooflutter') . '</h6>' . esc_html__('Give here a long error message that will be display on payment failed/cancelled/denaid status. With the confirmation message that the form didn\'t submitted.', 'wooflutter')
+                    ],
+                    [
+                        'name'    => 'gf_flutterwave_paymentReminder',
+						'label'   => esc_html__('Payment Reminder', 'wooflutter'),
+						'type'    => 'button',
+                        'value'   => __( 'Edit template', 'wooflutter'),
+						'tooltip'  => '<h6>' . esc_html__('Payment Reminder', 'wooflutter') . '</h6>' . esc_html__('Give here any html template that will be applied for payment reminder email template from Entry list screen. Following tags could be applicable on this template. {{mailImagePath}}, {{customFullName}}, {{senderFullName}}, {{dateMMMMdd}}, {{dateYYYMMDD}}, {{productName}}, {{invoiceNumber}}, {{siteEmail}}, {{siteURL}}, {{siteAddress}}, {{customAddressFull}}, {{invoiceIssuedOn}}, {{invoiceUnit}}, {{invoiceTotal}}, {{invoiceTax}}, {{invoiceSubtotal}}', 'wooflutter')
+                    ],
+                    [
+                        'name'    => 'gf_flutterwave_enableReadOnly',
+						'label'   => esc_html__('Default value for sub accounts commission', 'wooflutter'),
+						'type'    => 'checkbox',
+                        'choices' => [
+                            ['label' => __('Enable read only', 'wooflutter'), 'name' => 'enableReadOnly', 'tooltip'  => '<h6>' . esc_html__('Read Only', 'wooflutter') . '</h6>' . esc_html__('Enable read only on the default value for sub accounts commission. In this case, user will no longer set comission from form settings.', 'wooflutter')]
+                        ],
+                    ],
+                    [
+                        'name'    => 'gf_flutterwave_defaultComission-client',
+						'label'   => esc_html__('Service provider percentage Commission', 'wooflutter'),
+						'type'    => 'text',
+						'tooltip'  => '<h6>' . esc_html__('Comission', 'wooflutter') . '</h6>' . esc_html__('Set a default comission for the following sub account.', 'wooflutter')
+                    ],
+                    [
+                        'name'    => 'gf_flutterwave_defaultComission-partner',
+						'label'   => esc_html__('Partner percentage Commission', 'wooflutter'),
+						'type'    => 'text',
+						'tooltip'  => '<h6>' . esc_html__('Comission', 'wooflutter') . '</h6>' . esc_html__('Set a default comission for the following sub account.', 'wooflutter')
+                    ],
+                    [
+                        'name'    => 'gf_flutterwave_defaultComission-staff',
+						'label'   => esc_html__('Agent percentage Commission', 'wooflutter'),
+						'type'    => 'text',
+						'tooltip'  => '<h6>' . esc_html__('Comission', 'wooflutter') . '</h6>' . esc_html__('Set a default comission for the following sub account.', 'wooflutter')
+                    ],
                 ],
             ]
         ];
 	}
+    private function isConfigured() {
+        $settings = $this->get_plugin_settings();
+        return (
+            !empty(rgar($settings, 'gf_flutterwave_publickey')) && 
+            !empty(rgar($settings, 'gf_flutterwave_secretkey')) && 
+            true
+        );
+    }
 	public function feed_list_no_item_message() {
-		$settings = $this->get_plugin_settings();
-		if (! rgar($settings, 'gf_flutterwave_configured')) {
+		if (! $this->isConfigured() ) {
 			return sprintf(esc_html__('To get started, please configure your %sFlutterWave Settings%s!', 'wooflutter'), '<a href="' . admin_url('admin.php?page=gf_settings&subview=' . $this->_slug) . '">', '</a>');
 		} else {
 			return parent::feed_list_no_item_message();
@@ -302,6 +434,10 @@ class GFFlutterWave extends \GFPaymentAddOn {
 		 */
 		return apply_filters('gform_flutterwave_feed_settings_fields', $default_settings, $form);
 	}
+    //This function returns the default_settings
+    public static function feed_settings_fields_fields() {
+        return parent::feed_settings_fields();
+    }
 	public function supported_billing_intervals() {
 		$billing_cycles = array(
 			'day'   => array('label' => esc_html__('day(s)', 'wooflutter'), 'min' => 1, 'max' => 90),

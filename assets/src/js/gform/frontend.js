@@ -11,7 +11,7 @@ import toastify from "toastify-js";
 // const flutterwave = require('flutterwave-node-v3');
 
 ( function ( $ ) {
-	class FutureWordPress_Frontend {
+	class GForm_Frontend {
 		/**
 		 * Constructor
 		 */
@@ -386,5 +386,5 @@ import toastify from "toastify-js";
 			});
 		}
 	}
-	new FutureWordPress_Frontend();
+	new GForm_Frontend();
 } )( jQuery );

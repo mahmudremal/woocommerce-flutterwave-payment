@@ -10,12 +10,14 @@ import Toastify from 'toastify-js';
 // import 'selectize';
 
 ( function ( $ ) {
-	class FutureWordPress_Backend {
+	class GForm_Backend {
 		/**
 		 * Constructor
 		 */
 		constructor() {
-			this.ajaxUrl = fwpSiteConfig?.ajaxUrl??'';
+			const thisClass = this;
+			if (!fwpSiteConfig) {var fwpSiteConfig = {}};
+			this.ajaxUrl = fwpSiteConfig?.ajaxUrl??`${location.origin}/wp-admin/admin-ajax.php`;
 			this.config = fwpSiteConfig?.config??{};
 			this.ajaxNonce = fwpSiteConfig?.ajax_nonce??'';
 			this.profile = fwpSiteConfig?.profile??false;
@@ -27,8 +29,14 @@ import Toastify from 'toastify-js';
 			this.pendingRequestofComissionAccounts = false;
 			window.matchComissionAccount = this.matchComissionAccount;
 			this.fetchedFieldFirstTime = false;
-			window.Swal = Swal;
-			this.setup_hooks();
+			window.Swal = Swal;window.GFlutter = this;
+			window.addEventListener('load', () => thisClass.setup_hooks());
+			// window.onload = () => {this.setup_hooks();}
+			// this.fetchDefaultComission();
+		}
+		setup_hooks() {
+			const thisClass = this;
+			thisClass.setup_events();
 			this.init_settings_field();
 			this.init_creditCard();
 			this.init_tagInputs();
@@ -36,11 +44,10 @@ import Toastify from 'toastify-js';
 			this.init_toast();
 			this.init_fieldSettings();
 			this.loadComissionAccount();
-			// this.fetchDefaultComission();
 		}
-		setup_hooks() {
+		setup_events() {
 			const thisClass = this;var frame, element, text;
-			document.body.addEventListener('reload-page', (event) => {location.reloadevent;});
+			document.body.addEventListener('reload-page', (event) => {location.reload();});
 			document.body.addEventListener('reminder-sent', (event) => {
 				if(!thisClass.mailReminderBtn) {return;}
 				thisClass.mailReminderBtn.removeAttribute('disabled');
@@ -600,23 +607,16 @@ import Toastify from 'toastify-js';
 			/**
 			 * Transfer text field to textarea field;
 			 */
-			document.querySelectorAll('#paymentReminder').forEach((el)=>{
-				var parent = el.parentElement;
-
-				// el.value = thisClass.stripslashes(el.value);
-				// var value = el.value;
-				// var textarea = document.createElement('textarea');
-				// textarea.value = value;textarea.name = el.name;
-				// textarea.id=el.id;el.id = el.id+'_';
-				// textarea.placeholder = el.placeholder;
-				// textarea.rows = 10;
-				// parent.insertBefore(textarea, el);
-				// el.remove();
-
-				var btn = document.createElement('button');
-				btn.id=el.id;el.id = el.id+'_';btn.type = 'button';
-				btn.classList.add('primary', 'button', 'large');
-				btn.innerHTML = thisClass.i18n?.edit_template??'Edit template';
+			document.querySelectorAll('#paymentReminder, #gf_flutterwave_paymentReminder').forEach((el)=>{
+				if (el.id == 'paymentReminder') {
+					var parent = el.parentElement;
+					var btn = document.createElement('button');
+					btn.id=el.id;el.id = el.id+'_';btn.type = 'button';
+					btn.classList.add('primary', 'button', 'large');
+					btn.innerHTML = thisClass.i18n?.edit_template??'Edit template';
+				} else {
+					var btn = el;
+				}
 
 				btn.addEventListener('click', (event) => {
 					event.preventDefault();
@@ -651,7 +651,9 @@ import Toastify from 'toastify-js';
 					});
 				});
 				
-				parent.insertBefore(btn, el);el.remove();
+				if (el.id == 'paymentReminder') {
+					parent.insertBefore(btn, el);el.remove();
+				}
 			});
 		}
 		stripslashes(str) {
@@ -697,7 +699,7 @@ import Toastify from 'toastify-js';
 		}
 
 		matchComissionAccount(el, value) {
-			const thisClass = window.GFlutter;
+			const thisClass = this;
 			if(el.nextElementSibling && el.nextElementSibling.nodeName == 'SMALL') {el.nextElementSibling.remove()}
 			if(thisClass.comissionAccounts) {
 				var account = thisClass.comissionAccounts.find((row)=>(row.subaccount_id==value || row.id == value));
@@ -753,5 +755,5 @@ import Toastify from 'toastify-js';
 			return new Promise(resolve => setTimeout(resolve, ms));
 		}
 	}
-	new FutureWordPress_Backend();
+	new GForm_Backend();
 } )( jQuery );
