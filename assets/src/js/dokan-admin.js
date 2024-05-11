@@ -1,9 +1,8 @@
-// Stylings
-import './checkout'
-// import './frontend/map';
+// Scripting
+import './dokan'
 
 // Styles
-import '../sass/checkout.scss';
+import '../sass/dashboard.scss';
 
 // Images.
 // import '../img/cats.jpg';

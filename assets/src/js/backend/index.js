@@ -16,7 +16,7 @@ import Swal from "sweetalert2";
 			this.setup_hooks();
 		}
 		setup_hooks() {
-			window.thisClass = this;
+			window.WooFlutter = this;
 			// this.init_i18n();
 			// this.init_toast();
 			this.init_events();

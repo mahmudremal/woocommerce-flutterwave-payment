@@ -15,7 +15,7 @@
 			this.setup_hooks();
 		}
 		setup_hooks() {
-			window.thisClass = this;
+			window.WooFlutter = this;
 			this.setup_events();
 		}
 		setup_events() {

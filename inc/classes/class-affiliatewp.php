@@ -29,6 +29,7 @@ class Affiliatewp {
 
 		add_filter('affwp_settings_tabs', [$this, 'setting_tab']);
 		add_filter('affwp_settings', [$this, 'register_settings_legacy']);
+
 	}
 
 	/**

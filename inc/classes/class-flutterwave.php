@@ -183,11 +183,12 @@ class Flutterwave {
 
 
     public function createPayment($args) {
+        $txref = isset($args['tx_ref'])?$args['tx_ref']:(isset($args['txref'])?$args['txref']:'');
         $args = wp_parse_args($args, [
             // 'txref' => '',
             // 'amount' => '',
             // 'currency' => '',
-            'redirect_url' => site_url('/payment/flutterwave/'.$args['tx_ref'].'/status/'),
+            'redirect_url' => site_url('/payment/flutterwave/' . $txref . '/status/'),
             // 'customer_info' => [
             //     'email' => '',
             //     // 'customer_email' => '',

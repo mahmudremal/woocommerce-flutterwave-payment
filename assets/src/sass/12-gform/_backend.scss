@@ -1,0 +1,304 @@
+.wp-admin {
+    &.toplevel_page_crm_dashboard {
+      #wpcontent {
+        transition: all .7s ease;
+        @include mq($from: 750px) {
+          margin-left: 140px;
+        }
+        #wpbody-content {
+          .flutterwaves_live_card {
+            // border: 1px solid #ddd;
+            .card {
+              margin-top: 0px;
+            }
+          }
+          min-height: 100vh;
+          > div {
+            display: none;
+          }
+          .clear {
+            display: block;
+          }
+          .dashboard__body-start {
+            display: block;
+            margin: 10px;
+            .card-block.card-height {
+              max-width: unset;
+            }
+            .notice, .notice ~ .updated  {
+              display: none;
+            }
+            .card-full-width {
+              width: 100%;
+              max-width: unset;
+              padding: unset;
+            }
+            .profile-img-edit {
+              width: fit-content;
+              margin: auto;
+            }
+          }
+        }
+      }
+      // , .folded #wpfooter
+      &.folded #wpcontent {
+        margin-left: 36px;
+      }
+      &.fwp-full-screen {
+        #wpadminbar, #adminmenumain {
+          display: none;
+        }
+        #wpcontent, #wpfooter {
+          margin-left: auto;
+        }
+        #wpcontent {
+          background: #ddd;
+          z-index: -1;
+          display: block;
+          position: relative;
+          padding-left: unset;
+        }
+      }
+    }
+  
+  
+    .flutterwave_action {
+      &__handle {
+        display: inline-block;
+      }
+    }
+    .dynamic_popup {
+      padding: 3rem 0;
+      margin: auto;
+      .send-email-reminder, .do_refund {
+        gap: 10px;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        padding: 10px 10px;
+        .spinner-circular-tube {
+          width: 10px;
+          height: 10px;
+          display: none;
+          border-radius: 50%;
+          border: 10.2px #474bff double;
+          border-left-style: solid;
+          animation: spinner-aib1d7 0.75s infinite linear;
+        }
+        &:disabled .spinner-circular-tube {
+          display: block;
+        }
+        &.btn {
+          align-items: center;
+          appearance: none;
+          border-radius: 4px;
+          border-style: none;
+          box-shadow: rgba(0, 0, 0, .2) 0 3px 1px -2px,rgba(0, 0, 0, .14) 0 2px 2px 0,rgba(0, 0, 0, .12) 0 1px 5px 0;
+          box-sizing: border-box;
+          color: #fff;
+          cursor: pointer;
+          // display: inline-flex;
+          font-family: Roboto,sans-serif;
+          font-size: .875rem;
+          font-weight: 500;
+          height: 36px;
+          justify-content: center;
+          letter-spacing: .0892857em;
+          line-height: normal;
+          min-width: 64px;
+          outline: none;
+          overflow: visible;
+          padding: 0 16px;
+          position: relative;
+          text-align: center;
+          text-decoration: none;
+          text-transform: uppercase;
+          transition: box-shadow 280ms cubic-bezier(.4, 0, .2, 1);
+          user-select: none;
+          -webkit-user-select: none;
+          touch-action: manipulation;
+          vertical-align: middle;
+          will-change: transform,opacity;
+          &:hover {
+            color: #333;
+            box-shadow: rgba(0, 0, 0, .2) 0 2px 4px -1px, rgba(0, 0, 0, .14) 0 4px 5px 0, rgba(0, 0, 0, .12) 0 1px 10px 0;
+          }
+          &:disabled {
+            background-color: rgba(0, 0, 0, .12);
+            box-shadow: rgba(0, 0, 0, .2) 0 0 0 0, rgba(0, 0, 0, .14) 0 0 0 0, rgba(0, 0, 0, .12) 0 0 0 0;
+            color: rgba(0, 0, 0, .37);
+            cursor: default;
+            pointer-events: none;
+          }
+          &:not(:disabled) {
+            background-color: #00d2ff;
+          }
+          &:focus {
+            box-shadow: rgba(0, 0, 0, .2) 0 2px 4px -1px, rgba(0, 0, 0, .14) 0 4px 5px 0, rgba(0, 0, 0, .12) 0 1px 10px 0;
+          }
+          &:active {
+            box-shadow: rgba(0, 0, 0, .2) 0 5px 5px -3px, rgba(0, 0, 0, .14) 0 8px 10px 1px, rgba(0, 0, 0, .12) 0 3px 14px 2px;
+            background: #A46BF5;
+          }
+        }
+      }
+      button.do_refund.btn {
+        margin: auto;
+        color: unset;
+        padding: 5px 15px;
+        border: 1px solid #333;
+        box-shadow: unset !important;
+        background: unset !important;
+        .spinner-circular-tube {
+          border-width: 7px;
+          border-color: #868686;
+        }
+      }
+    }
+  
+  }
+  @keyframes spinner-aib1d7 {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  #sidebar_field_info {
+    margin-top: 50px;
+  }
+  
+  .popup_step {
+    #invoiceInfo {
+      font-family: Arial, Helvetica, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+      td, th {
+        border: 1px solid #ddd;
+        padding: 8px;
+      }
+      tr:nth-child(even){background-color: #f2f2f2;}
+      tr:hover {background-color: #ddd;}
+      th {
+        padding-top: 12px;
+        padding-bottom: 12px;
+        text-align: left;
+        background-color: #04AA6D;
+        color: white;
+      }
+    }
+    fieldset {
+      margin: auto;
+      margin-top: 2rem;
+      padding: 5rem 2rem;
+      background-size: 40%;
+      background-repeat: no-repeat;
+      background-position: center right;
+    }
+    iframe {
+      height: auto;
+      width: 100%;
+      margin: 1rem 0;
+      min-height: 500px;
+      border: 1px solid #ddd;
+      box-shadow: 1px 1px 5px #ddd;
+      &::-webkit-scrollbar {
+        width: 2px;
+      }
+      &::-webkit-scrollbar-track {
+        background: #ffffff3a;
+      }
+  
+      &::-webkit-scrollbar-thumb {
+        background-color: #ffffff;
+        border-radius: 20px;
+      }
+    }
+  }
+  
+  .popup_step #invoiceInfo tr:nth-child(6) td,
+  .field_id-payment_status.column-field_id-payment_status {
+    text-transform: capitalize;
+  }
+  .button.update_pay_link {
+    .dashicons-before {
+      display: flex;
+    }
+    &:disabled .dashicons-before {
+      -webkit-animation: fa-spin 2s infinite linear;
+      animation: fa-spin 2s infinite linear;
+    }
+  }
+  
+  
+  .d-none {
+    display: none;
+  }
+  
+  .gform_setting_subaccounts_card-body {
+    padding: 10px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    border: 1px solid #d3d3d3;
+  }
+  
+  .gform-settings-tab {
+    &__header {
+      padding: 5px 10px;
+      font-size: 14px;
+      font-weight: 600;
+      background: #ebebeb;
+    }
+    &__body {
+      padding: 10px;
+      padding-bottom: 0;
+      margin-bottom: 10px;
+      border: 1px solid #d3d3d3;
+    }
+  }
+  
+  .gform-settings-panel__content .gform-settings-field.gform-settings-field__number .gform-settings-input__container input[type="number"] {
+    max-width: 100%;
+    width: 100%;
+  }
+  .gform-settings-input__container {
+    input[type="text"] {
+      & + small {
+        padding: 5px;
+        display: block;
+        font-size: 12px;
+        margin-top: 5px;
+        font-weight: 600;
+        position: relative;
+        border: 1px solid #eee;
+      }
+    }
+  }
+  
+  
+  
+  
+  
+  
+  .gform-settings-panel label[for="paymentReminder"] + h4 {
+    margin: 30px auto 0;
+    // text-transform: uppercase;
+    font-size: 15px;
+    padding: 10px;
+    border: 1px solid #dfdfdf;
+    border-radius: 3px;
+    border-bottom: unset;
+    & ~ * {
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-bottom: unset;
+      border-top: unset;
+      margin: auto;
+      &:last-child {
+        border-bottom: 1px solid #ddd;
+      }
+    }
+    & + * {
+      border-top: 1px solid #ddd;
+    }
+  }
+  

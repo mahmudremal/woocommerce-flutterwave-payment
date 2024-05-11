@@ -71,14 +71,14 @@ final class Flutterwave_Gateway_Blocks_Support extends AbstractPaymentMethodType
 		// 
 		wp_register_script(
 			'wc-flutterwave-blocks-integration',
-			WOOFLUTTER_BUILD_URI . '/js/checkout.js',
+			WOOFLUTTER_BUILD_URI . '/js/woo_public.js',
 			[
 				'wc-blocks-registry',
 				'wc-settings',
 				'wp-element',
 				'wp-html-entities'
 			],
-			filemtime(WOOFLUTTER_BUILD_PATH . '/js/checkout.js'),
+			apply_filters('wooflutter/function/filemtime', apply_filters('wooflutter/path/fix/slashes', WOOFLUTTER_BUILD_PATH . '/js/woo_public.js')),
 			true
 		);
 		if( function_exists( 'wp_set_script_translations' ) ) {

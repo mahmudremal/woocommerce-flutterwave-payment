@@ -19,27 +19,52 @@ class Assets {
 		
 		// add_action('admin_enqueue_scripts', [$this, 'admin_enqueue_scripts'], 10, 1);
 		// 
-		add_filter('futurewordpress/project/ctto/javascript/siteconfig', [$this, 'siteConfig'], 1, 2);
+		add_filter('gflutter/project/javascript/siteconfig', [$this, 'siteConfig'], 1, 2);
+		add_filter('wooflutter/function/filemtime', [$this, 'filemtime'], 0, 1);
 	}
 	/**
 	 * Enqueue frontend Styles.
 	 * @return null
 	 */
 	public function register_styles() {
-		wp_enqueue_style('wooflutter-public', WOOFLUTTER_BUILD_CSS_URI . '/public.css', [], $this->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH . '/public.css'), 'all');
-		wp_enqueue_style('wooflutter-checkout', WOOFLUTTER_BUILD_CSS_URI . '/checkout.css', [], $this->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH . '/checkout.css'), 'all');
+		
+		if( $this->allow_enqueue('public', is_admin())) {
+			wp_enqueue_style('flutter-public', WOOFLUTTER_BUILD_CSS_URI . '/public.css', [], $this->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH . '/public.css'), 'all');
+		}
+		if( $this->allow_enqueue('woocommerce', is_admin())) {
+			wp_enqueue_style('woo-public', WOOFLUTTER_BUILD_CSS_URI . '/woo_public.css', [], $this->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH . '/woo_public.css'), 'all');
+		}
 	}
 	/**
 	 * Enqueue frontend Scripts.
 	 * @return null
 	 */
 	public function register_scripts() {
-		wp_enqueue_script('wooflutter-public', WOOFLUTTER_BUILD_JS_URI . '/public.js', ['jquery'], $this->filemtime(WOOFLUTTER_BUILD_JS_DIR_PATH.'/public.js'), true);
-		wp_localize_script('wooflutter-public', 'fwpSiteConfig', apply_filters('futurewordpress/project/ctto/javascript/siteconfig', []));
+		
+		if( $this->allow_enqueue('public', is_admin())) {
+			wp_enqueue_script('flutter-public', WOOFLUTTER_BUILD_JS_URI . '/public.js', ['jquery'], $this->filemtime(WOOFLUTTER_BUILD_JS_DIR_PATH.'/public.js'), true);
+			wp_localize_script('flutter-public', 'fwpSiteConfig', apply_filters('gflutter/project/javascript/siteconfig', []));
+		}
 
 		
-		wp_enqueue_style('wooflutter-dokan', WOOFLUTTER_BUILD_CSS_URI . '/dokan.css', [], $this->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH . '/dokan.css'), 'all');
-		wp_enqueue_script('wooflutter-dokan', WOOFLUTTER_BUILD_JS_URI . '/dokan.js', ['jquery', 'wp-element'], $this->filemtime(WOOFLUTTER_BUILD_JS_DIR_PATH . '/dokan.js'), true);
+		if( $this->allow_enqueue('woocommerce', is_admin())) {
+			wp_enqueue_script('woo-public', WOOFLUTTER_BUILD_JS_URI . '/woo_public.js', [], $this->filemtime(WOOFLUTTER_BUILD_JS_DIR_PATH . '/woo_public.js'), true);
+		}
+		
+		if( $this->allow_enqueue('dokan', is_admin())) {
+			wp_enqueue_style('flutter-dokan', WOOFLUTTER_BUILD_CSS_URI . '/dokan.css', [], $this->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH . '/dokan.css'), 'all');
+			wp_enqueue_script('flutter-dokan', WOOFLUTTER_BUILD_JS_URI . '/dokan.js', ['jquery', 'wp-element'], $this->filemtime(WOOFLUTTER_BUILD_JS_DIR_PATH . '/dokan.js'), true);
+		}
+
+		// Register scripts.
+		if( $this->allow_enqueue('gravityform', is_admin())) {
+			// wp_register_script('imask', WOOFLUTTER_BUILD_LIB_URI.'/js/imask.min.js', [], false, true);
+			// wp_register_script('checkout-flutterwave', 'https://checkout.flutterwave.com/v3.js', ['jquery'], false, true);
+			// wp_register_script('forge', 'https://cdn.jsdelivr.net/npm/node-forge@1.0.0/dist/forge.min.js', ['jquery'], false, true);
+				// , 'imask'
+			wp_enqueue_script('flutter-gform', WOOFLUTTER_BUILD_JS_URI.'/gform_public.js', ['jquery'], $this->filemtime(WOOFLUTTER_BUILD_JS_DIR_PATH.'/gform_public.js'), true);
+			wp_localize_script('flutter-gform', 'fwpSiteConfig', apply_filters('gflutter/project/javascript/siteconfig', []));
+		}
 	}
 	/**
 	 * Enqueue backend Scripts and stylesheet.
@@ -47,10 +72,28 @@ class Assets {
 	 */
 	public function admin_enqueue_scripts($curr_page) {
 		global $post;
-		// if(!in_array($curr_page, ['post-new.php', 'post.php', 'edit.php', 'order-terms'])) {return;}
-		wp_enqueue_style('wooflutter-admin', WOOFLUTTER_BUILD_CSS_URI . '/admin.css', [], $this->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH . '/admin.css'), 'all');
-		wp_enqueue_script('wooflutter-admin', WOOFLUTTER_BUILD_JS_URI . '/admin.js', ['jquery'], $this->filemtime(WOOFLUTTER_BUILD_JS_DIR_PATH . '/admin.js'), true);
-		wp_localize_script('wooflutter-admin', 'fwpSiteConfig', apply_filters('futurewordpress/project/ctto/javascript/siteconfig', [], true));
+		
+		if( $this->allow_enqueue('admin', is_admin())) {
+			// if(!in_array($curr_page, ['post-new.php', 'post.php', 'edit.php', 'order-terms'])) {return;}
+			wp_enqueue_style('flutter-admin', WOOFLUTTER_BUILD_CSS_URI . '/admin.css', [], $this->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH . '/admin.css'), 'all');
+			wp_enqueue_script('flutter-admin', WOOFLUTTER_BUILD_JS_URI . '/admin.js', ['jquery'], $this->filemtime(WOOFLUTTER_BUILD_JS_DIR_PATH . '/admin.js'), true);
+			wp_localize_script('flutter-admin', 'fwpSiteConfig', apply_filters('gflutter/project/javascript/siteconfig', [], true));
+		}
+
+		
+		if( $this->allow_enqueue('dokan', is_admin())) {
+			wp_enqueue_style('flutter-dokan', WOOFLUTTER_BUILD_CSS_URI . '/dokan_admin.css', [], $this->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH . '/dokan_admin.css'), 'all');
+			wp_enqueue_script('flutter-dokan', WOOFLUTTER_BUILD_JS_URI . '/dokan_admin.js', ['jquery', 'wp-element'], $this->filemtime(WOOFLUTTER_BUILD_JS_DIR_PATH . '/dokan_admin.js'), true);
+		}
+
+		if( $this->allow_enqueue('gravityform', is_admin())) {
+			// 'https://cdnjs.cloudflare.com/ajax/libs/imask/3.4.0/imask.min.js'
+			wp_register_script('imask', WOOFLUTTER_BUILD_LIB_URI.'/js/imask.min.js', [], false, true);
+			wp_enqueue_style('flutter-gform',WOOFLUTTER_BUILD_CSS_URI.'/gform_admin.css',[], $this->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH.'/gform_admin.css'),'all');
+			wp_enqueue_script('flutter-gform',WOOFLUTTER_BUILD_JS_URI.'/gform_admin.js',['jquery', 'imask'], $this->filemtime(WOOFLUTTER_BUILD_JS_DIR_PATH.'/gform_admin.js'),true);
+			wp_localize_script('flutter-gform', 'fwpSiteConfig', apply_filters('gflutter/project/javascript/siteconfig', []));
+		}
+		
 	}
 	public function filemtime($path) {
 		return (file_exists($path)&&!is_dir($path))?filemtime($path):false;
@@ -73,5 +116,16 @@ class Assets {
 		}
 		// 
 		return $args;
+	}
+	/**
+	 * Return bool for allowing specific enqueue methods
+	 * 
+	 * @param string $for is the key of the addon to check the allowance of the script
+	 * @param bool $isAdmin is to verify whether it is admin side of frontend side.
+	 * 
+	 * @return bool Return the result true if it is allowed either false for now allowing.
+	 */
+	public function allow_enqueue(string $for, bool $isAdmin) {
+		return true;
 	}
 }

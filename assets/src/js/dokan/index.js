@@ -20,7 +20,7 @@ import Form from "./split";
 			this.setup_hooks();
 		}
 		setup_hooks() {
-			window.thisClass = this;
+			window.DokanFlutter = this;
 			this.setup_events();
 			this.load_split_blocks();
 			this.fetch_bank_branches();

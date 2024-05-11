@@ -28,6 +28,7 @@
  * Bootstrap the plugin.
  */
 
+defined('WOOFLUTTER_VERSION') || define('WOOFLUTTER_VERSION', '1.0.2');
 defined('WOOFLUTTER_FILE__') || define('WOOFLUTTER_FILE__', untrailingslashit(__FILE__));
 defined('WOOFLUTTER_DIR_PATH') || define('WOOFLUTTER_DIR_PATH', untrailingslashit(plugin_dir_path(WOOFLUTTER_FILE__)));
 defined('WOOFLUTTER_DIR_URI') || define('WOOFLUTTER_DIR_URI', untrailingslashit(plugin_dir_url(WOOFLUTTER_FILE__)));
@@ -40,6 +41,11 @@ defined('WOOFLUTTER_BUILD_CSS_URI') || define('WOOFLUTTER_BUILD_CSS_URI', untrai
 defined('WOOFLUTTER_BUILD_CSS_DIR_PATH') || define('WOOFLUTTER_BUILD_CSS_DIR_PATH', untrailingslashit(WOOFLUTTER_DIR_PATH) . '/assets/build/css');
 defined('WOOFLUTTER_BUILD_LIB_URI') || define('WOOFLUTTER_BUILD_LIB_URI', untrailingslashit(WOOFLUTTER_DIR_URI) . '/assets/build/library');
 defined('WOOFLUTTER_OPTIONS') || define('WOOFLUTTER_OPTIONS', get_option('wooflutter'));
+
+
+defined('WOOFLUTTER_TEST_MODE') || define('WOOFLUTTER_TEST_MODE', (bool)(isset(WOOFLUTTER_OPTIONS['testMode']) && WOOFLUTTER_OPTIONS['testMode']));
+defined('WOOFLUTTER_MAX_COMISSION') || define('WOOFLUTTER_MAX_COMISSION', 98.6);
+defined('WOOFLUTTER_ENABLE_CARD_FEATURE') || define('WOOFLUTTER_ENABLE_CARD_FEATURE', false);
 
 require_once WOOFLUTTER_DIR_PATH . '/inc/helpers/autoloader.php';
 // require_once WOOFLUTTER_DIR_PATH . '/inc/helpers/template-tags.php';

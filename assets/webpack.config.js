@@ -20,8 +20,12 @@ const SRC_DIR = path.resolve(__dirname, 'src');
 const entry = {
 	admin: JS_DIR + '/admin.js',
 	public: JS_DIR + '/public.js',
-	checkout: JS_DIR + '/block.js',
-	dokan: JS_DIR + '/dokan.js',
+	woo_public: JS_DIR + '/woo-public.js',
+	woo_admin: JS_DIR + '/woo-admin.js',
+	dokan_admin: JS_DIR + '/dokan-admin.js',
+	dokan_public: JS_DIR + '/dokan-public.js',
+	gform_admin: JS_DIR + '/gform-admin.js',
+	gform_public: JS_DIR + '/gform-public.js',
 };
 const output = {
 	path: BUILD_DIR,

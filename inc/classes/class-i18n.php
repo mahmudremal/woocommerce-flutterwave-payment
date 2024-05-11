@@ -248,21 +248,22 @@ class I18n {
 		return $def;
 	}
 	public function update_translations($key) {
-		$filename = WOOFLUTTER_DIR_PATH . '/templates/' . $key.'.txt';
-		// $this->translations && is_array($this->translations)
-		if (true) {
-			$handle = fopen($filename, "w+");
-			// $content = maybe_serialize($this->translations);
-			$content = json_encode($this->translations);
-			if (fwrite($handle, $content) === FALSE) {
-				fclose($handle);
-				return false;
-			} else {
-			}
-			fclose($handle);
-			return true;
-		}
-		return false;
+		return true;
+		// $filename = WOOFLUTTER_DIR_PATH . '/templates/' . $key.'.txt';
+		// // $this->translations && is_array($this->translations)
+		// if (true) {
+		// 	$handle = fopen($filename, "w+");
+		// 	// $content = maybe_serialize($this->translations);
+		// 	$content = json_encode($this->translations);
+		// 	if (fwrite($handle, $content) === FALSE) {
+		// 		fclose($handle);
+		// 		return false;
+		// 	} else {
+		// 	}
+		// 	fclose($handle);
+		// 	return true;
+		// }
+		// return false;
 	}
 	public function ajaxList() {
 		wp_send_json_success([
