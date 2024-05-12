@@ -186,12 +186,13 @@ class Flutterwave {
         $txref = isset($args['tx_ref'])?$args['tx_ref']:(isset($args['txref'])?$args['txref']:'');
         $args = wp_parse_args($args, [
             // 'txref' => '',
+            'tx_ref' => $txref,
             // 'amount' => '',
             // 'currency' => '',
             'redirect_url' => site_url('/payment/flutterwave/' . $txref . '/status/'),
             // 'customer_info' => [
             //     'email' => '',
-            //     // 'customer_email' => '',
+            // 'customer_email' => '',
 			// 	'customer_name' => '',
 			// 	'customer_phone' => ''
             // ],
@@ -208,8 +209,10 @@ class Flutterwave {
             //     'transfer' => '1'
             // ]
         ]);
+
         if (isset($args['customer_info'])) {
-            $args['customer_info']['email'] = ($args['customer_info']['email'] == '')?get_bloginfo('admin_email'):$args['customer_info']['email'];
+            // $args['customer_info']['email'] = ($args['customer_info']['email'] == '')?get_bloginfo('admin_email'):$args['customer_info']['email'];
+            $args['customer_info']['customer_email'] = ($args['customer_info']['customer_email'] == '')?get_bloginfo('admin_email'):$args['customer_info']['customer_email'];
         }
         try {
             $response = $this->execute("payments", $args);
@@ -464,7 +467,7 @@ class Flutterwave {
      */
     public function info($transaction_id) {
         try {
-            $response = $this->execute("transactions/{$transaction_id}/verify", $args);
+            $response = $this->execute("transactions/{$transaction_id}/verify");
             if ($response && isset($response['status'])) {
                 if ($response['status'] == 'success') {
                     return (array) $response['data'];

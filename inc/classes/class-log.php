@@ -19,13 +19,13 @@ class Log {
 	public function wp_mail_succeeded($mail_data) {
 		$args = (array) $this->get_mail_sent_log();
 		$args[] = $mail_data;
-		update_option('gflutter_mail_log', $args);
+		update_option('wooflutter_mail_log', $args);
 	}
 	public function erase_mail_sent_log() {
-		return update_option('gflutter_mail_log', []);
+		return update_option('wooflutter_mail_log', []);
 	}
 	public function get_mail_sent_log() {
-		return get_option('gflutter_mail_log', []);
+		return get_option('wooflutter_mail_log', []);
 	}
 	public function print_mail_sent_log() {
 		if (isset($_GET['developer_mode'])) {

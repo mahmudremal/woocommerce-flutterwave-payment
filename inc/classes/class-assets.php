@@ -17,9 +17,9 @@ class Assets {
 		add_action('wp_enqueue_scripts', [$this, 'register_styles']);
 		add_action('wp_enqueue_scripts', [$this, 'register_scripts']);
 		
-		// add_action('admin_enqueue_scripts', [$this, 'admin_enqueue_scripts'], 10, 1);
+		add_action('admin_enqueue_scripts', [$this, 'admin_enqueue_scripts'], 10, 1);
 		// 
-		add_filter('gflutter/project/javascript/siteconfig', [$this, 'siteConfig'], 1, 2);
+		add_filter('wooflutter/project/javascript/siteconfig', [$this, 'siteConfig'], 1, 2);
 		add_filter('wooflutter/function/filemtime', [$this, 'filemtime'], 0, 1);
 	}
 	/**
@@ -34,6 +34,10 @@ class Assets {
 		if( $this->allow_enqueue('woocommerce', is_admin())) {
 			wp_enqueue_style('woo-public', WOOFLUTTER_BUILD_CSS_URI . '/woo_public.css', [], $this->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH . '/woo_public.css'), 'all');
 		}
+		if( $this->allow_enqueue('gravityform', is_admin())) {
+			wp_enqueue_style('woo-public', WOOFLUTTER_BUILD_CSS_URI . '/woo_public.css', [], $this->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH . '/woo_public.css'), 'all');
+			wp_enqueue_style('flutter-gform', WOOFLUTTER_BUILD_CSS_URI.'/gform_public.css', [], $this->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH.'/gform_public.css'), 'all');
+		}
 	}
 	/**
 	 * Enqueue frontend Scripts.
@@ -43,7 +47,7 @@ class Assets {
 		
 		if( $this->allow_enqueue('public', is_admin())) {
 			wp_enqueue_script('flutter-public', WOOFLUTTER_BUILD_JS_URI . '/public.js', ['jquery'], $this->filemtime(WOOFLUTTER_BUILD_JS_DIR_PATH.'/public.js'), true);
-			wp_localize_script('flutter-public', 'fwpSiteConfig', apply_filters('gflutter/project/javascript/siteconfig', []));
+			wp_localize_script('flutter-public', 'fwpSiteConfig', apply_filters('wooflutter/project/javascript/siteconfig', []));
 		}
 
 		
@@ -52,8 +56,8 @@ class Assets {
 		}
 		
 		if( $this->allow_enqueue('dokan', is_admin())) {
-			wp_enqueue_style('flutter-dokan', WOOFLUTTER_BUILD_CSS_URI . '/dokan.css', [], $this->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH . '/dokan.css'), 'all');
-			wp_enqueue_script('flutter-dokan', WOOFLUTTER_BUILD_JS_URI . '/dokan.js', ['jquery', 'wp-element'], $this->filemtime(WOOFLUTTER_BUILD_JS_DIR_PATH . '/dokan.js'), true);
+			wp_enqueue_style('flutter-dokan', WOOFLUTTER_BUILD_CSS_URI . '/dokan_public.css', [], $this->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH . '/dokan_public.css'), 'all');
+			wp_enqueue_script('flutter-dokan', WOOFLUTTER_BUILD_JS_URI . '/dokan_public.js', ['jquery', 'wp-element'], $this->filemtime(WOOFLUTTER_BUILD_JS_DIR_PATH . '/dokan_public.js'), true);
 		}
 
 		// Register scripts.
@@ -63,7 +67,7 @@ class Assets {
 			// wp_register_script('forge', 'https://cdn.jsdelivr.net/npm/node-forge@1.0.0/dist/forge.min.js', ['jquery'], false, true);
 				// , 'imask'
 			wp_enqueue_script('flutter-gform', WOOFLUTTER_BUILD_JS_URI.'/gform_public.js', ['jquery'], $this->filemtime(WOOFLUTTER_BUILD_JS_DIR_PATH.'/gform_public.js'), true);
-			wp_localize_script('flutter-gform', 'fwpSiteConfig', apply_filters('gflutter/project/javascript/siteconfig', []));
+			wp_localize_script('flutter-gform', 'fwpSiteConfig', apply_filters('wooflutter/project/javascript/siteconfig', []));
 		}
 	}
 	/**
@@ -77,7 +81,7 @@ class Assets {
 			// if(!in_array($curr_page, ['post-new.php', 'post.php', 'edit.php', 'order-terms'])) {return;}
 			wp_enqueue_style('flutter-admin', WOOFLUTTER_BUILD_CSS_URI . '/admin.css', [], $this->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH . '/admin.css'), 'all');
 			wp_enqueue_script('flutter-admin', WOOFLUTTER_BUILD_JS_URI . '/admin.js', ['jquery'], $this->filemtime(WOOFLUTTER_BUILD_JS_DIR_PATH . '/admin.js'), true);
-			wp_localize_script('flutter-admin', 'fwpSiteConfig', apply_filters('gflutter/project/javascript/siteconfig', [], true));
+			wp_localize_script('flutter-admin', 'fwpSiteConfig', apply_filters('wooflutter/project/javascript/siteconfig', [], true));
 		}
 
 		
@@ -91,7 +95,7 @@ class Assets {
 			wp_register_script('imask', WOOFLUTTER_BUILD_LIB_URI.'/js/imask.min.js', [], false, true);
 			wp_enqueue_style('flutter-gform',WOOFLUTTER_BUILD_CSS_URI.'/gform_admin.css',[], $this->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH.'/gform_admin.css'),'all');
 			wp_enqueue_script('flutter-gform',WOOFLUTTER_BUILD_JS_URI.'/gform_admin.js',['jquery', 'imask'], $this->filemtime(WOOFLUTTER_BUILD_JS_DIR_PATH.'/gform_admin.js'),true);
-			wp_localize_script('flutter-gform', 'fwpSiteConfig', apply_filters('gflutter/project/javascript/siteconfig', []));
+			wp_localize_script('flutter-gform', 'fwpSiteConfig', apply_filters('wooflutter/project/javascript/siteconfig', []));
 		}
 		
 	}

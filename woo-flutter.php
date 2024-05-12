@@ -53,6 +53,9 @@ require_once WOOFLUTTER_DIR_PATH . '/inc/helpers/autoloader.php';
 
 try {
 	if (!function_exists('wooflutter_get_instance')) {
+		function wooflutter_print($args = []) {
+			echo '<pre>';print_r($args);wp_die('Remal Mahmud (mahmudremal@yahoo.com)');echo '</pre>';
+		}
 		function wooflutter_get_instance() {\WOOFLUTTER\inc\Project::get_instance();}
 		wooflutter_get_instance();
 	}

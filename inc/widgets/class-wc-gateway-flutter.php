@@ -320,7 +320,7 @@ class WC_Gateway_Flutter extends \WC_Payment_Gateway {
 		global $WooFlutter_Assets;
 		// if (is_checkout() && !is_checkout_pay_page()) {wp_redirect($order->get_checkout_payment_url());}
 
-		wp_enqueue_style('wooflutter-payment', WOOFLUTTER_BUILD_CSS_URI . '/checkout.css', [], $WooFlutter_Assets->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH . '/checkout.css'), 'all');
+		wp_enqueue_style('wooflutter-payment', WOOFLUTTER_BUILD_CSS_URI . '/woo_public.css', [], $WooFlutter_Assets->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH . '/woo_public.css'), 'all');
 
 		if(!(is_checkout_pay_page() || is_checkout())) {return;}
 		// if('no'===$this->enabled) {return;}
@@ -454,7 +454,7 @@ class WC_Gateway_Flutter extends \WC_Payment_Gateway {
 		$order_data = $order->get_data();
 		$WooFlutter_Flutterwave->set_api_key($this);
 		$args = [
-			'tx_ref'			=> $order->get_order_key(),
+			'tx_ref'			=> implode('.', ['wc', $order->get_order_key()]),
 			'amount'			=> $order->get_total(),
 			'currency'			=> $order->get_currency(),
 

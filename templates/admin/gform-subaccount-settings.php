@@ -66,7 +66,8 @@
                         <span class="gform-settings-input__container">
                             <?php
                             $comission = rgar($form, 'comissionAmount-'.esc_attr($type));
-                            $comission = (!$comission || empty($comission))?WOOFLUTTER_OPTIONS['defaultComission-'.esc_attr($type)]:$comission;
+                            $comission = (!$comission || empty($comission))?false:$comission;
+                            $comission = (!$comission && isset(WOOFLUTTER_OPTIONS['defaultComission-'.esc_attr($type)]))?WOOFLUTTER_OPTIONS['defaultComission-'.esc_attr($type)]:$comission;
                             ?>
                             <input type="text" id="comissionAmount-<?php echo esc_attr($type); ?>"  name="_gform_setting_comissionAmount-<?php echo esc_attr($type); ?>" data-onchange="SetFieldProperty('comissionAmount-<?php echo esc_attr($type); ?>', this.value);" data-onkeypress="SetFieldProperty('comissionAmount-<?php echo esc_attr($type); ?>', this.value);" value="<?php echo esc_attr($comission); ?>" data-default="<?php echo esc_attr(WOOFLUTTER_OPTIONS['defaultComission-'.esc_attr($type)]); ?>" <?php echo esc_attr(
                                 (isset(WOOFLUTTER_OPTIONS['enableReadOnly']) && WOOFLUTTER_OPTIONS['enableReadOnly'])?'disabled':''

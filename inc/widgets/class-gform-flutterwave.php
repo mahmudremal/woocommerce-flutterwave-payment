@@ -122,36 +122,34 @@ class GFFlutterWave extends \GFPaymentAddOn {
             ],
         ];
         // 
-        // wp_localize_script('gform_flutterwave_form_settings_js', 'fwpSiteConfig', apply_filters('gflutter/project/javascript/siteconfig', []));
+        // wp_localize_script('gform_flutterwave_form_settings_js', 'fwpSiteConfig', apply_filters('wooflutter/project/javascript/siteconfig', []));
 		return array_merge(parent::scripts(), $scripts);
 	}
 	public function plugin_settings_fields() {
-		$description = '
-			<p style="text-align: left;">' .
-			esc_html__('Gravity Forms requires IPN to be enabled on your FlutterWave account. Follow the following steps to confirm IPN is enabled.', 'wooflutter') .
-			'</p>
-			<!--
-			<ul>
-				<li>' . sprintf(esc_html__('Navigate to your FlutterWave %sIPN Settings page.%s', 'wooflutter'), '<a href="https://www.flutterwave.com/us/cgi-bin/webscr?cmd=_profile-ipn-notify" target="_blank">', '</a>') . '</li>' .
-				'<li>' . esc_html__('If IPN is already enabled, you will see your current IPN settings along with a button to turn off IPN. If that is the case, just check the confirmation box below and you are ready to go!', 'wooflutter') . '</li>' .
-				'<li>' . esc_html__("If IPN is not enabled, click the 'Choose IPN Settings' button.", 'wooflutter') . '</li>' .
-				'<li>' . sprintf(esc_html__('Click the box to enable IPN and enter the following Notification URL: %s', 'wooflutter'), '<strong>' . esc_url($this->get_callback_url()) . '</strong>') . '</li>' .
-			'</ul>
-			-->
-				<br/>';
+		/*
+			$description = '
+				<p style="text-align: left;">' .
+				esc_html__('Gravity Forms requires IPN to be enabled on your FlutterWave account. Follow the following steps to confirm IPN is enabled.', 'wooflutter') .
+				'</p>
+				<!--
+				<ul>
+					<li>' . sprintf(esc_html__('Navigate to your FlutterWave %sIPN Settings page.%s', 'wooflutter'), '<a href="https://www.flutterwave.com/us/cgi-bin/webscr?cmd=_profile-ipn-notify" target="_blank">', '</a>') . '</li>' .
+					'<li>' . esc_html__('If IPN is already enabled, you will see your current IPN settings along with a button to turn off IPN. If that is the case, just check the confirmation box below and you are ready to go!', 'wooflutter') . '</li>' .
+					'<li>' . esc_html__("If IPN is not enabled, click the 'Choose IPN Settings' button.", 'wooflutter') . '</li>' .
+					'<li>' . sprintf(esc_html__('Click the box to enable IPN and enter the following Notification URL: %s', 'wooflutter'), '<strong>' . esc_url($this->get_callback_url()) . '</strong>') . '</li>' .
+				'</ul>
+				-->
+			<br/>';
+		*/
+		$description = sprintf(
+			__('Gravity Forms integration with FlutterWave payments will work on both Gravity Forms and WooCommerce plugins. A secret key is mostly required to connect with FlutterWave. If you don\'t have this API key, you can %sfollow this link.%s', 'wooflutter'),
+			'<a href="https://app.flutterwave.com/dashboard/settings/apis/live/" target="_blank">', '</a>'
+		);
 		return [
             [
                 'title'       => '',
 				'description' => $description,
 				'fields'      => [
-                    [
-                        'name'    => 'gf_flutterwave_configured',
-						'label'   => esc_html__('FlutterWave IPN Setting', 'wooflutter'),
-						'type'    => 'checkbox',
-						'choices' => [
-                            ['label' => esc_html__('Confirm that you have configured your FlutterWave account to enable IPN', 'wooflutter'), 'name' => 'gf_flutterwave_configured'],
-                        ]
-                    ],
                     [
                         'name'    => 'gf_flutterwave_testMode',
 						'label'   => esc_html__('Test mode', 'wooflutter'),
@@ -217,7 +215,7 @@ class GFFlutterWave extends \GFPaymentAddOn {
                         'name'    => 'gf_flutterwave_paymentReminder',
 						'label'   => esc_html__('Payment Reminder', 'wooflutter'),
 						'type'    => 'button',
-                        'value'   => __( 'Edit template', 'wooflutter'),
+                        'value'   => __('Edit template', 'wooflutter'),
 						'tooltip'  => '<h6>' . esc_html__('Payment Reminder', 'wooflutter') . '</h6>' . esc_html__('Give here any html template that will be applied for payment reminder email template from Entry list screen. Following tags could be applicable on this template. {{mailImagePath}}, {{customFullName}}, {{senderFullName}}, {{dateMMMMdd}}, {{dateYYYMMDD}}, {{productName}}, {{invoiceNumber}}, {{siteEmail}}, {{siteURL}}, {{siteAddress}}, {{customAddressFull}}, {{invoiceIssuedOn}}, {{invoiceUnit}}, {{invoiceTotal}}, {{invoiceTax}}, {{invoiceSubtotal}}', 'wooflutter')
                     ],
                     [
@@ -256,10 +254,10 @@ class GFFlutterWave extends \GFPaymentAddOn {
             !empty(rgar($settings, 'gf_flutterwave_publickey')) && 
             !empty(rgar($settings, 'gf_flutterwave_secretkey')) && 
             true
-        );
+		);
     }
 	public function feed_list_no_item_message() {
-		if (! $this->isConfigured() ) {
+		if (! $this->isConfigured()) {
 			return sprintf(esc_html__('To get started, please configure your %sFlutterWave Settings%s!', 'wooflutter'), '<a href="' . admin_url('admin.php?page=gf_settings&subview=' . $this->_slug) . '">', '</a>');
 		} else {
 			return parent::feed_list_no_item_message();
@@ -267,29 +265,28 @@ class GFFlutterWave extends \GFPaymentAddOn {
 	}
 	public function feed_settings_fields() {
 		$default_settings = parent::feed_settings_fields();
-		//--add FlutterWave Email Address field
-		$fields = array(
-			array(
+		$fields = [
+			[
 				'name'     => 'flutterwaveEmail',
 				'label'    => esc_html__('FlutterWave Email Address ', 'wooflutter'),
 				'type'     => 'text',
 				'class'    => 'medium',
 				'required' => true,
 				'tooltip'  => '<h6>' . esc_html__('FlutterWave Email Address', 'wooflutter') . '</h6>' . esc_html__('Enter the FlutterWave email address where payment should be received.', 'wooflutter')
-			),
-			array(
+			],
+			[
 				'name'          => 'mode',
 				'label'         => esc_html__('Mode', 'wooflutter'),
 				'type'          => 'radio',
-				'choices'       => array(
-					array('id' => 'gf_flutterwave_mode_production', 'label' => esc_html__('Production', 'wooflutter'), 'value' => 'production'),
-					array('id' => 'gf_flutterwave_mode_test', 'label' => esc_html__('Test', 'wooflutter'), 'value' => 'test'),
-				),
+				'choices'       => [
+					['id' => 'gf_flutterwave_mode_production', 'label' => esc_html__('Production', 'wooflutter'), 'value' => 'production'],
+					['id' => 'gf_flutterwave_mode_test', 'label' => esc_html__('Test', 'wooflutter'), 'value' => 'test']
+				],
 				'horizontal'    => true,
 				'default_value' => 'production',
 				'tooltip'       => '<h6>' . esc_html__('Mode', 'wooflutter') . '</h6>' . esc_html__('Select Production to receive live payments. Select Test for testing purposes when using the FlutterWave development sandbox.', 'wooflutter')
-			),
-		);
+			],
+		];
 		$default_settings = parent::add_field_after('feedName', $fields, $default_settings);
 		//--------------------------------------------------------------------------------------
 		//--add donation to transaction type drop down
@@ -304,81 +301,73 @@ class GFFlutterWave extends \GFPaymentAddOn {
 		}
 		if ($add_donation) {
 			//add donation transaction type
-			$choices[] = array('label' => __('Donations', 'wooflutter'), 'value' => 'donation');
+			$choices[] = ['label' => __('Donations', 'wooflutter'), 'value' => 'donation'];
 		}
 		$transaction_type['choices'] = $choices;
 		$default_settings            = $this->replace_field('transactionType', $transaction_type, $default_settings);
 		//-------------------------------------------------------------------------------------------------
 		//--add Image URL, Cancel URL
-		$fields = array(
-			array(
+		$fields = [
+			[
 				'name'     => 'imageURL',
 				'label'    => esc_html__('Image URL', 'wooflutter'),
 				'type'     => 'text',
 				'class'    => 'medium',
 				'required' => false,
 				'tooltip'  => '<h6>' . esc_html__('Image URL', 'wooflutter') . '</h6>' . esc_html__('This option allows you to enter the URL of the 150x50-pixel image displayed as your logo in the upper left corner of the FlutterWave checkout pages. Default is your business name, if you have a FlutterWave Business account or your email address, if you have FlutterWave Premier or Personal account.', 'wooflutter')
-			),
-			array(
+			],
+			[
 				'name'     => 'cancelUrl',
 				'label'    => esc_html__('Cancel URL', 'wooflutter'),
 				'type'     => 'text',
 				'class'    => 'medium',
 				'required' => false,
 				'tooltip'  => '<h6>' . esc_html__('Cancel URL', 'wooflutter') . '</h6>' . esc_html__('Enter the URL the user should be sent to should they cancel before completing their FlutterWave payment.', 'wooflutter')
-			),
-			array(
+			],
+			[
 				'name'    => 'options',
 				'label'   => esc_html__('Options', 'wooflutter'),
 				'type'    => 'options',
 				'tooltip' => '<h6>' . esc_html__('Options', 'wooflutter') . '</h6>' . esc_html__('Turn on or off the available FlutterWave checkout options.', 'wooflutter'),
-				'choices' => array(
-					array(
-						'label' => esc_html__('Do not prompt buyer to include a shipping address.', 'wooflutter'),
-						'name'  => 'disableShipping',
-					),
-					array(
-						'label' => esc_html__('Do not prompt buyer to include a note with payment.', 'wooflutter'),
-						'name'  => 'disableNote',
-					),
-				),
-			),
-		);
+				'choices' => [
+					['label' => esc_html__('Do not prompt buyer to include a shipping address.', 'wooflutter'), 'name'  => 'disableShipping'],
+					['label' => esc_html__('Do not prompt buyer to include a note with payment.', 'wooflutter'), 'name'  => 'disableNote']
+				],
+			]
+		];
 		if ($this->get_setting('delayNotification') || ! $this->is_gravityforms_supported('1.9.12')) {
-			$fields[] = array(
+			$fields[] = [
 				'name'    => 'notifications',
 				'label'   => esc_html__('Notifications', 'wooflutter'),
 				'type'    => 'notifications',
 				'tooltip' => '<h6>' . esc_html__('Notifications', 'wooflutter') . '</h6>' . esc_html__("Enable this option if you would like to only send out this form's notifications for the 'Form is submitted' event after payment has been received. Leaving this option disabled will send these notifications immediately after the form is submitted. Notifications which are configured for other events will not be affected by this option.", 'wooflutter')
-			);
+			];
 		}
 		//Add post fields if form has a post
 		$form = $this->get_current_form();
 		if (\GFCommon::has_post_field($form['fields'])) {
-			$post_settings = array(
+			$post_settings = [
 				'name'    => 'post_checkboxes',
 				'label'   => esc_html__('Posts', 'wooflutter'),
 				'type'    => 'checkbox',
 				'tooltip' => '<h6>' . esc_html__('Posts', 'wooflutter') . '</h6>' . esc_html__('Enable this option if you would like to only create the post after payment has been received.', 'wooflutter'),
-				'choices' => array(
-					array('label' => esc_html__('Create post only when payment is received.', 'wooflutter'), 'name' => 'delayPost'),
-				),
-			);
+				'choices' => [
+					['label' => esc_html__('Create post only when payment is received.', 'wooflutter'), 'name' => 'delayPost']
+				],
+			];
 			if ($this->get_setting('transactionType') == 'subscription') {
-				$post_settings['choices'][] = array(
+				$post_settings['choices'][] = [
 					'label'    => esc_html__('Change post status when subscription is canceled.', 'wooflutter'),
 					'name'     => 'change_post_status',
 					'onChange' => 'var action = this.checked ? "draft" : ""; jQuery("#update_post_action").val(action);',
-				);
+				];
 			}
 			$fields[] = $post_settings;
 		}
 		//Adding custom settings for backwards compatibility with hook 'gform_flutterwave_add_option_group'
-		$fields[] = array(
-			'name'  => 'custom_options',
-			'label' => '',
-			'type'  => 'custom',
-		);
+		$fields[] = [
+			'name'  => 'custom_options', 'label' => '', 'type'  => 'custom'
+		];
 		$default_settings = $this->add_field_after('billingInformation', $fields, $default_settings);
 		//-----------------------------------------------------------------------------------------
 		//--get billing info section and add customer first/last name
@@ -396,34 +385,36 @@ class GFFlutterWave extends \GFPaymentAddOn {
 		}
 		if ($add_last_name) {
 			//add last name
-			array_unshift($billing_info['field_map'], array('name' => 'lastName', 'label' => esc_html__('Last Name', 'wooflutter'), 'required' => false));
+			array_unshift($billing_info['field_map'], ['name' => 'lastName', 'label' => esc_html__('Last Name', 'wooflutter'), 'required' => false]);
 		}
 		if ($add_first_name) {
-			array_unshift($billing_info['field_map'], array('name' => 'firstName', 'label' => esc_html__('First Name', 'wooflutter'), 'required' => false));
+			array_unshift($billing_info['field_map'], ['name' => 'firstName', 'label' => esc_html__('First Name', 'wooflutter'), 'required' => false]);
 		}
 		$default_settings = parent::replace_field('billingInformation', $billing_info, $default_settings);
 		//----------------------------------------------------------------------------------------------------
 		//hide default display of setup fee, not used by FlutterWave Standard
 		$default_settings = parent::remove_field('setupFee', $default_settings);
 		//--add trial period
-		$trial_period     = array(
+		$trial_period     = [
 			'name'    => 'trialPeriod',
 			'label'   => esc_html__('Trial Period', 'wooflutter'),
 			'type'    => 'trial_period',
 			'hidden'  => ! $this->get_setting('trial_enabled'),
 			'tooltip' => '<h6>' . esc_html__('Trial Period', 'wooflutter') . '</h6>' . esc_html__('Select the trial period length.', 'wooflutter')
-		);
+		];
 		$default_settings = parent::add_field_after('trial', $trial_period, $default_settings);
 		//-----------------------------------------------------------------------------------------
 		//--Add Try to bill again after failed attempt.
-		$recurring_retry  = array(
+		$recurring_retry  = [
 			'name'       => 'recurringRetry',
 			'label'      => esc_html__('Recurring Retry', 'wooflutter'),
 			'type'       => 'checkbox',
 			'horizontal' => true,
-			'choices'    => array(array('label' => esc_html__('Try to bill again after failed attempt.', 'wooflutter'), 'name' => 'recurringRetry', 'value' => '1')),
+			'choices'    => [
+				['label' => esc_html__('Try to bill again after failed attempt.', 'wooflutter'), 'name' => 'recurringRetry', 'value' => '1']
+			],
 			'tooltip'    => '<h6>' . esc_html__('Recurring Retry', 'wooflutter') . '</h6>' . esc_html__('Turn on or off whether to try to bill again after failed attempt.', 'wooflutter')
-		);
+		];
 		$default_settings = parent::add_field_after('recurringTimes', $recurring_retry, $default_settings);
 		//-----------------------------------------------------------------------------------------------------
 		/**
@@ -439,12 +430,12 @@ class GFFlutterWave extends \GFPaymentAddOn {
         return parent::feed_settings_fields();
     }
 	public function supported_billing_intervals() {
-		$billing_cycles = array(
-			'day'   => array('label' => esc_html__('day(s)', 'wooflutter'), 'min' => 1, 'max' => 90),
-			'week'  => array('label' => esc_html__('week(s)', 'wooflutter'), 'min' => 1, 'max' => 52),
-			'month' => array('label' => esc_html__('month(s)', 'wooflutter'), 'min' => 1, 'max' => 24),
-			'year'  => array('label' => esc_html__('year(s)', 'wooflutter'), 'min' => 1, 'max' => 5)
-		);
+		$billing_cycles = [
+			'day'   => ['label' => esc_html__('day(s)', 'wooflutter'), 'min' => 1, 'max' => 90],
+			'week'  => ['label' => esc_html__('week(s)', 'wooflutter'), 'min' => 1, 'max' => 52],
+			'month' => ['label' => esc_html__('month(s)', 'wooflutter'), 'min' => 1, 'max' => 24],
+			'year'  => ['label' => esc_html__('year(s)', 'wooflutter'), 'min' => 1, 'max' => 5],
+		];
 		return $billing_cycles;
 	}
 	public function field_map_title() {
@@ -453,9 +444,7 @@ class GFFlutterWave extends \GFPaymentAddOn {
 	public function settings_trial_period($field, $echo = true) {
 		//use the parent billing cycle function to make the drop down for the number and type
 		$html = parent::settings_billing_cycle($field, false);
-		if ($echo) {
-			echo $html;
-		}
+		if ($echo) {echo $html;}
 		return $html;
 	}
 	public function set_trial_onchange($field) {
@@ -486,9 +475,7 @@ class GFFlutterWave extends \GFPaymentAddOn {
 		do_action('gform_flutterwave_action_fields', $this->get_current_feed(), $this->get_current_form());
 		$html .= ob_get_clean();
 		//--------------------------------------------------------
-		if ($echo) {
-			echo $html;
-		}
+		if ($echo) {echo $html;}
 		return $html;
 	}
 	public function settings_custom($field, $echo = true) {
@@ -501,25 +488,20 @@ class GFFlutterWave extends \GFPaymentAddOn {
 		</div>
 		<?php
 		$html = ob_get_clean();
-		if ($echo) {
-			echo $html;
-		}
+		if ($echo) {echo $html;}
 		return $html;
 	}
 	public function settings_notifications($field, $echo = true) {
-		$checkboxes = array(
+		$checkboxes = [
 			'name'    => 'delay_notification',
 			'type'    => 'checkboxes',
 			'onclick' => 'ToggleNotifications();',
-			'choices' => array(
-				array(
-					'label' => esc_html__("Send notifications for the 'Form is submitted' event only when payment is received.", 'wooflutter'),
-					'name'  => 'delayNotification',
-				),
-			)
-		);
+			'choices' => [
+				['label' => esc_html__("Send notifications for the 'Form is submitted' event only when payment is received.", 'wooflutter'), 'name'  => 'delayNotification']
+			]
+		];
 		$html = $this->settings_checkbox($checkboxes, false);
-		$html .= $this->settings_hidden(array('name' => 'selectedNotifications', 'id' => 'selectedNotifications'), false);
+		$html .= $this->settings_hidden(['name' => 'selectedNotifications', 'id' => 'selectedNotifications'], false);
 		$form                      = $this->get_current_form();
 		$has_delayed_notifications = $this->get_setting('delayNotification');
 		ob_start();
@@ -529,9 +511,9 @@ class GFFlutterWave extends \GFPaymentAddOn {
 			if (! empty($form) && is_array($form['notifications'])) {
 				$selected_notifications = $this->get_setting('selectedNotifications');
 				if (! is_array($selected_notifications)) {
-					$selected_notifications = array();
+					$selected_notifications = [];
 				}
-				//$selected_notifications = empty($selected_notifications) ? array() : json_decode($selected_notifications);
+				//$selected_notifications = empty($selected_notifications) ? [] : json_decode($selected_notifications);
 				$notifications = \GFCommon::get_notifications('form_submission', $form);
 				foreach ($notifications as $notification) {
 					?>
@@ -577,15 +559,15 @@ class GFFlutterWave extends \GFPaymentAddOn {
 	}
 	public function checkbox_input_change_post_status($choice, $attributes, $value, $tooltip) {
 		$markup = $this->checkbox_input($choice, $attributes, $value, $tooltip);
-		$dropdown_field = array(
+		$dropdown_field = [
 			'name'     => 'update_post_action',
-			'choices'  => array(
-				array('label' => ''),
-				array('label' => esc_html__('Mark Post as Draft', 'wooflutter'), 'value' => 'draft'),
-				array('label' => esc_html__('Delete Post', 'wooflutter'), 'value' => 'delete'),
-			),
+			'choices'  => [
+				['label' => ''],
+				['label' => esc_html__('Mark Post as Draft', 'wooflutter'), 'value' => 'draft'],
+				['label' => esc_html__('Delete Post', 'wooflutter'), 'value' => 'delete'],
+			],
 			'onChange' => "var checked = jQuery(this).val() ? 'checked' : false; jQuery('#change_post_status').attr('checked', checked);",
-		);
+		];
 		$markup .= '&nbsp;&nbsp;' . $this->settings_select($dropdown_field, false);
 		return $markup;
 	}
@@ -636,7 +618,7 @@ class GFFlutterWave extends \GFPaymentAddOn {
 		if (empty($can_verify_ipn)) {
 			$url = 'https://www.sandbox.flutterwave.com/cgi-bin/webscr/';
 			$request  = new \WP_Http();
-			$response = $request->post($url, array('httpversion' => '1.1', 'sslverify' => false, 'ssl' => true, 'body' => 'cmd=_notify-validate', 'timeout' => 20));
+			$response = $request->post($url, ['httpversion' => '1.1', 'sslverify' => false, 'ssl' => true, 'body' => 'cmd=_notify-validate', 'timeout' => 20]);
 			if (! is_wp_error($response) && rgar($response, 'body') == 'INVALID') {
 				$can_verify_ipn = 'yes';
 			} else {
@@ -647,7 +629,7 @@ class GFFlutterWave extends \GFPaymentAddOn {
 		}
 		if ($can_verify_ipn == 'no') {
 			//display message
-			echo '<div class="error"> <p><strong>WARNING:</strong> Your web server does not currently support the SHA-2 SSL Certificate standard required by FlutterWave.  <a href="https://devblog.flutterwave.com/flutterwave-ssl-certificate-changes/">For details see FlutterWave\'s changeover announcement</a>. Please contact your web host to resolve this issue as soon as possible. <a href="' . add_query_arg(array('dismiss_ipn_check' => 1)) . '">Dismiss</a></p></div>';
+			echo '<div class="error"> <p><strong>WARNING:</strong> Your web server does not currently support the SHA-2 SSL Certificate standard required by FlutterWave.  <a href="https://devblog.flutterwave.com/flutterwave-ssl-certificate-changes/">For details see FlutterWave\'s changeover announcement</a>. Please contact your web host to resolve this issue as soon as possible. <a href="' . add_query_arg(['dismiss_ipn_check' => 1]) . '">Dismiss</a></p></div>';
 		}
 	}
 	//------ SENDING TO FlutterWave -----------//
@@ -701,10 +683,10 @@ class GFFlutterWave extends \GFPaymentAddOn {
 			return '';
 		}
 		$url .= $query_string;
-		$url = gf_apply_filters('gform_flutterwave_request', $form['id'], $url, $form, $entry, $feed, $submission_data);
-		
 		//add the bn code (build notation code)
 		$url .= '&bn=Rocketgenius_SP';
+		$url = gf_apply_filters('gform_flutterwave_request', $form['id'], $url, $form, $entry, $feed, $submission_data);
+		
 		$this->log_debug(__METHOD__ . "(): Sending to FlutterWave: {$url}");
 		return $url;
 	}
@@ -909,9 +891,9 @@ class GFFlutterWave extends \GFPaymentAddOn {
 			$field_id = $feed['meta'][ $field['meta_name'] ];
 			$value    = rgar($entry, $field_id);
 			if ($field['name'] == 'country') {
-				$value = class_exists('GF_Field_Address') ? GF_Fields::get('address')->get_country_code($value) : \GFCommon::get_country_code($value);
+				$value = class_exists('GF_Field_Address') ? \GF_Fields::get('address')->get_country_code($value) : \GFCommon::get_country_code($value);
 			} elseif ($field['name'] == 'state') {
-				$value = class_exists('GF_Field_Address') ? GF_Fields::get('address')->get_us_state_code($value) : \GFCommon::get_us_state_code($value);
+				$value = class_exists('GF_Field_Address') ? \GF_Fields::get('address')->get_us_state_code($value) : \GFCommon::get_us_state_code($value);
 			}
 			if (! empty($value)) {
 				$fields .= "&{$field['name']}=" . urlencode($value);
@@ -942,7 +924,7 @@ class GFFlutterWave extends \GFPaymentAddOn {
 		 * @param int $entry_id	The ID of the entry that was just created.
 		 * @param string $query	The query string portion of the URL.
 		 */
-		return apply_filters('gform_flutterwave_return_url', $url, $form_id, $lead_id, $query );
+		return apply_filters('gform_flutterwave_return_url', $url, $form_id, $lead_id, $query);
 	}
 	public static function maybe_thankyou_page() {
 		$instance = self::get_instance();
@@ -964,7 +946,7 @@ class GFFlutterWave extends \GFPaymentAddOn {
 					header("Location: {$confirmation['redirect']}");
 					exit;
 				}
-				\GFFormDisplay::$submission[ $form_id ] = array('is_confirmation' => true, 'confirmation_message' => $confirmation, 'form' => $form, 'lead' => $lead);
+				\GFFormDisplay::$submission[ $form_id ] = ['is_confirmation' => true, 'confirmation_message' => $confirmation, 'form' => $form, 'lead' => $lead];
 			}
 		}
 	}
@@ -1041,7 +1023,8 @@ class GFFlutterWave extends \GFPaymentAddOn {
 			return $is_disabled;
 		}
 		$feed                   = $this->current_feed;
-		$selected_notifications = is_array(rgar($feed['meta'], 'selectedNotifications')) ? rgar($feed['meta'], 'selectedNotifications') : array();
+		$selected_notifications = is_array(rgar($feed['meta'], 'selectedNotifications')) ? rgar($feed['meta'], 'selectedNotifications') : [];
+		
 		return isset($feed['meta']['delayNotification']) && in_array($notification['id'], $selected_notifications) ? true : $is_disabled;
 	}
 
@@ -1062,7 +1045,7 @@ class GFFlutterWave extends \GFPaymentAddOn {
 		$is_verified = $this->verify_flutterwave_ipn();
 		if (is_wp_error($is_verified)) {
 			$this->log_error(__METHOD__ . '(): IPN verification failed with an error. Aborting with a 500 error so that IPN is resent.');
-			return new WP_Error('IPNVerificationError', 'There was an error when verifying the IPN message with FlutterWave', array('status_header' => 500));
+			return new WP_Error('IPNVerificationError', 'There was an error when verifying the IPN message with FlutterWave', ['status_header' => 500]);
 		} elseif (! $is_verified) {
 			$this->log_error(__METHOD__ . '(): IPN request could not be verified by FlutterWave. Aborting.');
 			return false;
@@ -1169,7 +1152,7 @@ class GFFlutterWave extends \GFPaymentAddOn {
 		$url_info = parse_url($url);
 		//Post back to FlutterWave system to validate
 		$request  = new \WP_Http();
-		$headers  = array('Host' => $url_info['host']);
+		$headers  = ['Host' => $url_info['host']];
 		$sslverify = (bool) get_option('gform_flutterwave_sslverify');
 		/**
 		 * Allow sslverify be modified before sending requests
@@ -1180,20 +1163,20 @@ class GFFlutterWave extends \GFPaymentAddOn {
 		 */
 		$sslverify = apply_filters('gform_flutterwave_sslverify', $sslverify);
 		$this->log_debug(__METHOD__ . '(): sslverify: ' . $sslverify);
-		$response = $request->post($url, array('httpversion' => '1.1', 'headers' => $headers, 'sslverify' => $sslverify, 'ssl' => true, 'body' => $req, 'timeout' => 20));
+		$response = $request->post($url, ['httpversion' => '1.1', 'headers' => $headers, 'sslverify' => $sslverify, 'ssl' => true, 'body' => $req, 'timeout' => 20]);
 		$this->log_debug(__METHOD__ . '(): Response: ' . print_r($response, true));
 		if (is_wp_error($response)) {
 			return $response;
 		}
 		$body = trim($response['body']);
-		if (! in_array($body, array('VERIFIED', 'INVALID'))) {
+		if (! in_array($body, ['VERIFIED', 'INVALID'])) {
 			return new WP_Error('IPNVerificationError', 'Unexpected content in the response body.');
 		}
 		return $body == 'VERIFIED';
 	}
 	private function process_ipn($config, $entry, $status, $transaction_type, $transaction_id, $parent_transaction_id, $subscriber_id, $amount, $pending_reason, $reason, $recurring_amount) {
 		$this->log_debug(__METHOD__ . "(): Payment status: {$status} - Transaction Type: {$transaction_type} - Transaction ID: {$transaction_id} - Parent Transaction: {$parent_transaction_id} - Subscriber ID: {$subscriber_id} - Amount: {$amount} - Pending reason: {$pending_reason} - Reason: {$reason}");
-		$action = array();
+		$action = [];
 		switch (strtolower($transaction_type)) {
 			case 'subscr_payment' :
 				//transaction created
@@ -1643,7 +1626,7 @@ class GFFlutterWave extends \GFPaymentAddOn {
 	 * @return array
 	 */
 	public function get_notifications_to_send($form, $feed) {
-		$notifications_to_send  = array();
+		$notifications_to_send  = [];
 		$selected_notifications = rgars($feed, 'meta/selectedNotifications');
 		if (is_array($selected_notifications)) {
 			// Make sure that the notifications being sent belong to the form submission event, just in case the notification event was changed after the feed was configured.
@@ -1763,12 +1746,7 @@ class GFFlutterWave extends \GFPaymentAddOn {
 		$wpdb->query($sql);
 	}
 	public function add_legacy_meta($new_meta, $old_feed) {
-		$known_meta_keys = array(
-								'email', 'mode', 'type', 'style', 'continue_text', 'cancel_url', 'disable_note', 'disable_shipping', 'recurring_amount_field', 'recurring_times',
-								'recurring_retry', 'billing_cycle_number', 'billing_cycle_type', 'trial_period_enabled', 'trial_amount', 'trial_period_number', 'trial_period_type', 'delay_post',
-								'update_post_action', 'delay_notifications', 'selected_notifications', 'flutterwave_conditional_enabled', 'flutterwave_conditional_field_id',
-								'flutterwave_conditional_operator', 'flutterwave_conditional_value', 'customer_fields',
-								);
+		$known_meta_keys = ['email', 'mode', 'type', 'style', 'continue_text', 'cancel_url', 'disable_note', 'disable_shipping', 'recurring_amount_field', 'recurring_times', 'recurring_retry', 'billing_cycle_number', 'billing_cycle_type', 'trial_period_enabled', 'trial_amount', 'trial_period_number', 'trial_period_type', 'delay_post', 'update_post_action', 'delay_notifications', 'selected_notifications', 'flutterwave_conditional_enabled', 'flutterwave_conditional_field_id', 'flutterwave_conditional_operator', 'flutterwave_conditional_value', 'customer_fields'];
 		foreach ($old_feed['meta'] as $key => $value) {
 			if (! in_array($key, $known_meta_keys)) {
 				$new_meta[ $key ] = $value;
@@ -1800,7 +1778,7 @@ class GFFlutterWave extends \GFPaymentAddOn {
 	public function copy_settings() {
 		//copy plugin settings
 		$old_settings = get_option('gf_flutterwave_configured');
-		$new_settings = array('gf_flutterwave_configured' => $old_settings);
+		$new_settings = ['gf_flutterwave_configured' => $old_settings];
 		$this->update_plugin_settings($new_settings);
 	}
 	public function copy_feeds() {
@@ -1813,9 +1791,9 @@ class GFFlutterWave extends \GFPaymentAddOn {
 				$form_id         = $old_feed['form_id'];
 				$is_active       = $old_feed['is_active'];
 				$customer_fields = $old_feed['meta']['customer_fields'];
-				$new_meta = array(
+				$new_meta = [
 					'feedName'                     => $feed_name,
-					'flutterwaveEmail'                  => rgar($old_feed['meta'], 'email'),
+					'flutterwaveEmail'             => rgar($old_feed['meta'], 'email'),
 					'mode'                         => rgar($old_feed['meta'], 'mode'),
 					'transactionType'              => rgar($old_feed['meta'], 'type'),
 					'type'                         => rgar($old_feed['meta'], 'type'), //For backwards compatibility of the delayed payment feature
@@ -1848,26 +1826,25 @@ class GFFlutterWave extends \GFPaymentAddOn {
 					'billingInformation_state'     => rgar($customer_fields, 'state'),
 					'billingInformation_zip'       => rgar($customer_fields, 'zip'),
 					'billingInformation_country'   => rgar($customer_fields, 'country'),
-				);
+				];
 				$new_meta = $this->add_legacy_meta($new_meta, $old_feed);
 				//add conditional logic
 				$conditional_enabled = rgar($old_feed['meta'], 'flutterwave_conditional_enabled');
 				if ($conditional_enabled) {
 					$new_meta['feed_condition_conditional_logic']        = 1;
-					$new_meta['feed_condition_conditional_logic_object'] = array(
-						'conditionalLogic' =>
-							array(
-								'actionType' => 'show',
-								'logicType'  => 'all',
-								'rules'      => array(
-									array(
-										'fieldId'  => rgar($old_feed['meta'], 'flutterwave_conditional_field_id'),
-										'operator' => rgar($old_feed['meta'], 'flutterwave_conditional_operator'),
-										'value'    => rgar($old_feed['meta'], 'flutterwave_conditional_value')
-									),
-								)
-							)
-					);
+					$new_meta['feed_condition_conditional_logic_object'] = [
+						'conditionalLogic' =>[
+							'actionType' => 'show',
+							'logicType'  => 'all',
+							'rules'      => [
+								[
+									'fieldId'  => rgar($old_feed['meta'], 'flutterwave_conditional_field_id'),
+									'operator' => rgar($old_feed['meta'], 'flutterwave_conditional_operator'),
+									'value'    => rgar($old_feed['meta'], 'flutterwave_conditional_value')
+								]
+							]
+						]
+					];
 				} else {
 					$new_meta['feed_condition_conditional_logic'] = 0;
 				}

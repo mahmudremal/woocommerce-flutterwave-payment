@@ -22,12 +22,16 @@ class Gform {
 		$this->id = 'flutterlovesgravity';
 		$this->currentEntry = false;
 		// load class.
-		$this->setup_hooks();
+		// $this->setup_hooks();
+		add_filter('gform_currencies', [$this, 'gform_currencies'], 10, 1);
+		add_filter('gform_flutterwave_request', [$this, 'gform_flutterwave_request'], 10, 5);
+		add_action('gform_loaded', [$this, 'gform_loaded'], 5, 0);
+		add_action('wooflutter/payment/flutterwave/status', [$this, 'wooflutter_payment_flutterwave_status'], 10, 4);
+		add_action('wooflutter/payment/flutterwave/status/back2text', [$this, 'wooflutter_payment_flutterwave_status_back2text'], 10, 5);
+		add_action('wooflutter/payment/flutterwave/status/back2link', [$this, 'wooflutter_payment_flutterwave_status_back2link'], 10, 5);
+		add_action('wooflutter/payment/flutterwave/status/retry', [$this, 'wooflutter_payment_flutterwave_status_retry'], 10, 5);
 	}
 	protected function setup_hooks() {
-
-		add_action('gform_loaded', [$this, 'gform_loaded'], 5, 0);
-		
 		// add_action( 'init', [ $this, 'wp_init' ], 10, 0 );
 		// add_action( 'admin_init', [ $this, 'admin_init' ], 10, 0 );
 		// add_filter( 'pre_get_posts', [ $this, 'pre_get_posts' ], 10, 1 );
@@ -101,17 +105,16 @@ class Gform {
 		// add_action('gform_pre_submission', [$this, 'gform_pre_submission'], 10, 1);
 		// add_action('gform_after_submission', [$this, 'gform_after_submission'], 10, 2);
 
-		add_filter('gform_currencies', [$this, 'gform_currencies'], 10, 1);
 
-		add_action('wp_ajax_gflutter/project/mailsystem/sendreminder', [$this, 'sendReminder'], 10, 0);
-		add_action('wp_ajax_gflutter/project/payment/updatelink', [$this, 'updateLink'], 10, 0);
-		add_action('wp_ajax_gflutter/project/payment/refund', [$this, 'paymentRefund'], 10, 0);
-		add_action('wp_ajax_gflutter/project/payment/flutterwave/cardtoken', [$this, 'cardToken'], 10, 0);
-		add_action('wp_ajax_nopriv_gflutter/project/payment/flutterwave/cardtoken', [$this, 'cardToken'], 10, 0);
-		add_action('wp_ajax_gflutter/project/payment/flutterwave/cardotp', [$this, 'cardOTP'], 10, 0);
-		add_action('wp_ajax_nopriv_gflutter/project/payment/flutterwave/cardotp', [$this, 'cardOTP'], 10, 0);
-		add_action('wp_ajax_gflutter/project/payment/flutterwave/getsubac', [$this, 'getSubAC'], 10, 0);
-		add_action('wp_ajax_nopriv_gflutter/project/payment/flutterwave/getsubac', [$this, 'getSubAC'], 10, 0);
+		add_action('wp_ajax_wooflutter/project/mailsystem/sendreminder', [$this, 'sendReminder'], 10, 0);
+		add_action('wp_ajax_wooflutter/project/payment/updatelink', [$this, 'updateLink'], 10, 0);
+		add_action('wp_ajax_wooflutter/project/payment/refund', [$this, 'paymentRefund'], 10, 0);
+		add_action('wp_ajax_wooflutter/project/payment/flutterwave/cardtoken', [$this, 'cardToken'], 10, 0);
+		add_action('wp_ajax_nopriv_wooflutter/project/payment/flutterwave/cardtoken', [$this, 'cardToken'], 10, 0);
+		add_action('wp_ajax_wooflutter/project/payment/flutterwave/cardotp', [$this, 'cardOTP'], 10, 0);
+		add_action('wp_ajax_nopriv_wooflutter/project/payment/flutterwave/cardotp', [$this, 'cardOTP'], 10, 0);
+		add_action('wp_ajax_wooflutter/project/payment/flutterwave/getsubac', [$this, 'getSubAC'], 10, 0);
+		add_action('wp_ajax_nopriv_wooflutter/project/payment/flutterwave/getsubac', [$this, 'getSubAC'], 10, 0);
 
 		// add_action( 'init', [ $this, 'wp_init' ], 10, 0 );
 
@@ -119,8 +122,8 @@ class Gform {
 		add_filter('gpi_query', [$this, 'gpi_query_hook_payment_status'], 10, 2);
 
 		
-		add_action('wp_ajax_gflutter/project/get/email/template', [$this, 'getEmailTemplate'], 10, 0);
-		add_action('wp_ajax_gflutter/project/update/email/template', [$this, 'updateEmailTemplate'], 10, 0);
+		add_action('wp_ajax_wooflutter/project/get/email/template', [$this, 'getEmailTemplate'], 10, 0);
+		add_action('wp_ajax_wooflutter/project/update/email/template', [$this, 'updateEmailTemplate'], 10, 0);
 
 	}
 	public function wp_init() {
@@ -754,10 +757,10 @@ class Gform {
 			case 'checkbox_multi':
 			case 'radio':
 			case 'select_multi':
-				$html .= apply_filters( 'gflutter/project/settings/fields/label', '<br/><span class="description">' . $field['description'] . '</span>', $field );
+				$html .= apply_filters( 'wooflutter/project/settings/fields/label', '<br/><span class="description">' . $field['description'] . '</span>', $field );
 			break;
 			default:
-				$html .= isset($field['description'])?apply_filters( 'gflutter/project/settings/fields/label', '<label for="' . esc_attr( $field['id'] ) . '"><span class="description">' . $field['description'] . '</span></label>' . "\n", $field ):'';
+				$html .= isset($field['description'])?apply_filters( 'wooflutter/project/settings/fields/label', '<label for="' . esc_attr( $field['id'] ) . '"><span class="description">' . $field['description'] . '</span></label>' . "\n", $field ):'';
 			break;
 		}
 		echo $html;
@@ -832,8 +835,8 @@ class Gform {
 		return $button;
 	}
 	public function gform_editor_js() {
-		do_action('gflutter/project/assets/register_styles');
-        do_action('gflutter/project/assets/register_scripts');
+		do_action('wooflutter/project/assets/register_styles');
+        do_action('wooflutter/project/assets/register_scripts');
         wp_enqueue_style('GravityformsFlutterwaveAddons');wp_enqueue_script('imask');
         wp_enqueue_script('GravityformsFlutterwaveAddons');
 		?>
@@ -1092,11 +1095,8 @@ class Gform {
 					</div>
 					<?php // echo $this->print_settings_fields($settings['fields']); ?>
 					<?php include apply_filters('wooflutter/path/fix/slashes', untrailingslashit(WOOFLUTTER_DIR_PATH) . '/templates/admin/gform-subaccount-settings.php'); ?>
-
 				</div>
 			</fieldset>
-
-			
 			<div class="gform-settings-save-container">
 				<button type="submit" id="gform-settings-save" name="gform-settings-save" value="save" form="gform-settings" class="primary button large">Save Settings &nbsp;→</button>
 			</div>
@@ -1104,7 +1104,6 @@ class Gform {
 		</form>
 		<?php
 		// echo $this->print_settings_fields($settings['fields']);
-		
 		\GFFormSettings::page_footer();
 	}
 	public function gforms_sub_accounts() {
@@ -1113,7 +1112,7 @@ class Gform {
 		// for ($i=1; $i <= 6; $i++) {
 		// 	$subaccounts[] = ['name' => 'account '.$i, 'label' => esc_html__( 'Sub account '.$i, 'wooflutter' ), 'value' => 'flatamount'];
 		// }
-		// $subaccounts = (array) apply_filters('gflutter/project/payment/getallsubaccounts',[], false);
+		// $subaccounts = (array) apply_filters('wooflutter/project/payment/getallsubaccounts',[], false);
 		try {
 			$subaccounts = $WooFlutter_Flutterwave->getAllSubAccounts();
 			if(count($subaccounts)>=1) {
@@ -1352,7 +1351,7 @@ class Gform {
 
 	public function updateLink() {
 		$request = $_POST;
-		check_ajax_referer('gflutter/project/verify/nonce', '_nonce', true);
+		check_ajax_referer('wooflutter/project/verify/nonce', '_nonce', true);
 		$args = [];
 		$args['hooks'] = ['payment-link-updated'];
 		$args['message'] = __('Something went wrong. We can\'t update payment link.', 'wooflutter');
@@ -1373,7 +1372,7 @@ class Gform {
 		}
 	}
 	public function paymentRefund() {
-		check_ajax_referer('gflutter/project/verify/nonce', '_nonce', true);
+		check_ajax_referer('wooflutter/project/verify/nonce', '_nonce', true);
 		global $WooFlutter_Flutterwave;$request = $_POST;$args = [];
 		$args['hooks'] = ['payment-refunded-failed'];$refund_amount = $request['amount'];
 		$args['message'] = __('Something went wrong. We can\'t update payment link.', 'wooflutter');
@@ -1409,7 +1408,7 @@ class Gform {
 	}
 	public function sendReminder() {
 		$request = $_POST;
-		check_ajax_referer('gflutter/project/verify/nonce', '_nonce', true);
+		check_ajax_referer('wooflutter/project/verify/nonce', '_nonce', true);
 		$args = [];
 		$args['hooks'] = ['reminder-sent'];
 		$args['message'] = __('Payment reminder mail sent successfully!', 'wooflutter');
@@ -1546,7 +1545,7 @@ class Gform {
 		<?php
 	}
 	public function getSubAC() {
-		// check_ajax_referer('gflutter/project/verify/nonce', '_nonce', true);
+		// check_ajax_referer('wooflutter/project/verify/nonce', '_nonce', true);
 		// Example usage
 		global $WooFlutter_Flutterwave;
 		$request = wp_parse_args($_POST, []);
@@ -1572,7 +1571,7 @@ class Gform {
 		}
 	}
 	public function cardToken() {
-		// check_ajax_referer('gflutter/project/verify/nonce', '_nonce', true);
+		// check_ajax_referer('wooflutter/project/verify/nonce', '_nonce', true);
 		// Example usage
 		global $WooFlutter_Flutterwave;
 		$request = wp_parse_args($_POST, []);
@@ -1613,7 +1612,7 @@ class Gform {
 		}
 	}
 	public function cardOTP() {
-		// check_ajax_referer('gflutter/project/verify/nonce', '_nonce', true);
+		// check_ajax_referer('wooflutter/project/verify/nonce', '_nonce', true);
 		global $WooFlutter_Flutterwave;
 		$request = wp_parse_args($_POST, []);
 		$json = ['hooks' => ['cardotp_falied']];
@@ -1825,6 +1824,158 @@ class Gform {
 			'template' => update_option('gform-flutterwave-reminder-template', $_POST['template'])
 		];
 		wp_send_json_success($json);
+	}
+	public function gform_flutterwave_request($url, $form, $entry, $feed, $submission_data) {
+		global $WooFlutter_Flutterwave;
+		if ($submission_data && isset($submission_data['payment_amount'])) {
+			// $link = $this->createPayLinkandGo($entry, $form, false);
+			$subaccounts = $this->getSubAccountData($form);
+			$args = [
+				'txref' => 'gfrm.'.time().'.'.$entry['id'],
+				'amount' => $submission_data['payment_amount'],
+				'currency' => isset($entry['currency'])?$entry['currency']:'NGN',
+				'customer_info' => [
+					'email' => rgar($entry, $feed['meta']['billingInformation_email']),
+					'customer_name' => implode(' ', [rgar($entry, $feed['meta']['billingInformation_firstName']), rgar($entry, $feed['meta']['billingInformation_lastName'])]),
+					'address' => rgar($entry, $feed['meta']['billingInformation_address']),
+					// 'customer_phone' => isset($formDate['phone'])?$formDate['phone']:0
+				],
+				'subaccounts'	=> $subaccounts
+			];
+			$args = $this->convertDefined2PercentageAmount($args, $form);
+			if (count($args['subaccounts']) <= 0) {unset($args['subaccounts']);}
+
+			$settings = (array) get_option('gravityformsaddon_wooflutter_settings', []);
+			// wooflutter_print($args);
+			$WooFlutter_Flutterwave->set_api_key((object) [
+				'secret_key'			=> $settings['gf_flutterwave_secretkey']??'',
+				'live_encript_key'		=> $settingSlug['gf_flutterwave_encryptionkey']??''
+			]);
+			$link = $WooFlutter_Flutterwave->createPayment($args);
+			
+			if ($link && !empty($link)) {$url = $link;}
+		}
+		return $url;
+	}
+	public function get_entry($tx_ref) {
+		$expoldes = explode('.', $tx_ref);
+		$entry_id = end($expoldes);
+		$entry = (\GFAPI::entry_exists((int)$entry_id))?\GFAPI::get_entry((int)$entry_id):false;
+		if(!$entry || is_wp_error($entry)) {
+			wp_die(__('Something suspicious detected or it would be probably currupted your request.', 'gravitylovesflutterwave'));
+		}
+		return $entry;
+	}
+	public function wooflutter_payment_flutterwave_status($type, $transaction_id, $payment_status, $tx_ref) {
+		if ($type !== 'gfrm') {return;}
+		global $WooFlutter_Flutterwave;global $trxStatus;
+		$settings = WOOFLUTTER_OPTIONS;global $pageTitle;
+
+		if(empty($payment_status) && empty($tx_ref)) {
+			$request = json_decode(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', stripslashes(html_entity_decode($_GET['response']))), true);
+			$tx_ref = $request['txRef'];
+			$transaction_id = $request['id'];
+			$payment_status = $request['status'];
+		}
+		$entry = $this->get_entry($tx_ref);
+		$form = (\GFAPI::form_id_exists((int)$entry['form_id']))?\GFAPI::get_form((int)$entry['form_id']):false;
+		
+		// Here
+		defined('GRAVITYFORMS_FLUTTERWAVE_ADDONS_PAYMENT_DONE') || define('GRAVITYFORMS_FLUTTERWAVE_ADDONS_PAYMENT_DONE', true);
+		$verify = apply_filters('wooflutter/project/payment/flutterwave/verify', $transaction_id, $payment_status);
+		if(in_array($payment_status, ['success', 'successful'])) {
+			if($verify) {
+				$is_updated = \GFAPI::update_entry_property($entry_id, 'transaction_id', $transaction_id);
+				// $is_updated = \GFAPI::update_entry_property($entry_id, 'payment_status', $payment_status);
+				$is_updated = \GFAPI::update_entry_property($entry_id, 'payment_method', 'flutterwave');
+				$is_updated = \GFAPI::update_entry_property($entry_id, 'transaction_type', 'card');
+				$is_updated = \GFAPI::update_entry_property($entry_id, 'is_fulfilled', true);
+				// $is_updated = \GFAPI::update_entry_property($entry_id, 'status', 'active');
+				// $is_updated = \GFAPI::update_entry_property($entry_id, 'is_approved', true);
+				// Notification sends from Here
+				// do_action('gform_post_payment_completed', $entry, $action);
+				do_action('gform_post_payment_completed', $entry, [
+					'payment_status'        => 'Paid',
+					'payment_date'          => gmdate('Y-m-d H:i:s'),
+					'type'                  => 'complete_payment'
+				]);
+				$is_updated = \GFAPI::update_entry_property($entry_id, 'payment_status', 'Completed');
+				$is_updated = \GFAPI::update_entry_property($entry_id, 'status', 'active');
+				$notify = \GFCommon::send_form_submission_notifications($entry, $form);
+				$fwpGravityforms->process_payment_and_send_emails($entry);
+				if(is_wp_error($is_updated)) {
+					$error_message = $is_updated->get_error_message();
+				} else {}
+			} else {
+				wp_die(
+					sprintf(
+						__('We can\'t verify this transaction. Please contact with support. Transaction no is. %s', 'gravitylovesflutterwave'),
+						'<b>'.$transaction_id.'</b>'
+					), __('Verification failed!', 'gravitylovesflutterwave')
+				);
+			}
+		}
+		else if(in_array($payment_status, ['cancelled', 'failed']) && $verify) {
+			do_action('gform_post_payment_' . $payment_status, $entry, [
+				'payment_status'        => 'Paid',
+				'payment_date'          => gmdate('Y-m-d H:i:s'),
+				'type'                  => 'fail_payment'
+			]);
+		} else {}
+		if($payment_status) {
+				do_action('wooflutter/project/assets/register_styles');
+				do_action('wooflutter/project/assets/register_scripts');
+				wp_enqueue_style('GravityformsFlutterwaveAddons');wp_enqueue_script('imask');
+				wp_enqueue_script('GravityformsFlutterwaveAddons');
+		} else {
+			wp_die(__('Something suspicious detected or it would be probably Failed your payment. Please try again.', 'gravitylovesflutterwave'));
+		}
+	}
+	public function wooflutter_payment_flutterwave_status_back2text($text, $type, $transaction_id, $payment_status, $tx_ref) {
+		if ($type !== 'gfrm') {return $text;}
+		$backtoText = __('Back to home', 'wooflutter');
+		
+		$entry = $this->get_entry($tx_ref);
+		$form = (\GFAPI::form_id_exists((int)$entry['form_id']))?\GFAPI::get_form((int)$entry['form_id']):false;
+		
+		if(isset($entry['source_url']) && !empty($entry['source_url'])) {
+			$backtoText = __('Back to form', 'wooflutter');
+			if($form && !is_wp_error($form)) {
+				foreach($form['fields'] as $i => $field) {
+					if(isset($field['type']) && $field['type'] == 'flutterwave_credit_card' && isset($settings['statusBtnLink']) && $settings['statusBtnLink'] == 'home') {
+						$backtoText = __('Back to home', 'wooflutter');
+					} else if($field->type == 'flutterwave_credit_card' && isset($settings['statusBtnLink']) && $settings['statusBtnLink'] == 'home') {
+						$backtoText = __('Back to home', 'wooflutter');
+					} else {}
+				}
+			}
+		}
+		return $backtoText;
+	}
+	public function wooflutter_payment_flutterwave_status_back2link($link, $type, $transaction_id, $payment_status, $tx_ref) {
+		if ($type !== 'gfrm') {return $link;}
+		$backtoLink = site_url();
+		$entry = $this->get_entry($tx_ref);
+		$form = (\GFAPI::form_id_exists((int)$entry['form_id']))?\GFAPI::get_form((int)$entry['form_id']):false;
+		if(isset($entry['source_url']) && !empty($entry['source_url'])) {
+			$backtoLink = $entry['source_url'];
+			if($form && !is_wp_error($form)) {
+				foreach($form['fields'] as $i => $field) {
+					if(isset($field['type']) && $field['type'] == 'flutterwave_credit_card' && isset($settings['statusBtnLink']) && $settings['statusBtnLink'] == 'home') {
+						$backtoLink = site_url();
+					} else if($field->type == 'flutterwave_credit_card' && isset($settings['statusBtnLink']) && $settings['statusBtnLink'] == 'home') {
+						$backtoLink = site_url();
+					} else {}
+				}
+			}
+		}
+		return $backtoLink;
+	}
+	public function wooflutter_payment_flutterwave_status_retry($retry, $type, $transaction_id, $payment_status, $tx_ref) {
+		if ($type !== 'gfrm') {return $retry;}
+		$entry = $this->get_entry($tx_ref);
+		if (!$entry || is_wp_error($entry)) {return $retry;}
+		return gform_get_meta($entry['id'], '_paymentlink');
 	}
 
 }
