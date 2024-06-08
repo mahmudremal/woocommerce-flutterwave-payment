@@ -10,3 +10,4 @@ import './woocommerce/backend'
 
 // Icons
 // import '../icons/quicklogin.svg';
+import '../icons/woo.png';

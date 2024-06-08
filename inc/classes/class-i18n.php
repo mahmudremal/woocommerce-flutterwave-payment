@@ -46,10 +46,7 @@ class I18n {
 			'submit' => __('Submit', 'wooflutter'),
 			// ...
 		];
-		wp_send_json_success([
-			'hooks'			=> ['ajaxi18nloaded'],
-			'translates'	=> $translates
-		]);
+		wp_send_json_success($translates);
 	}
 	public function number_translates() {
 		wp_send_json([

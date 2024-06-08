@@ -22,6 +22,7 @@ class Project {
 		global $WooFlutter_Update;$WooFlutter_Update = Update::get_instance();
 		global $WooFlutter_Notice;$WooFlutter_Notice = Notice::get_instance();
 		global $WooFlutter_Rewrite;$WooFlutter_Rewrite = Rewrite::get_instance();
+		global $WooFlutter_Widgets;$WooFlutter_Widgets = Widgets::get_instance();
 		global $WooFlutter_Meta_Boxes;$WooFlutter_Meta_Boxes = Meta_Boxes::get_instance();
 		global $WooFlutter_Woocommerce;$WooFlutter_Woocommerce = Woocommerce::get_instance();
 		global $WooFlutter_Flutterwave;$WooFlutter_Flutterwave = Flutterwave::get_instance();

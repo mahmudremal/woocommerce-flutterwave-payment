@@ -198,10 +198,11 @@ class WC_Gateway_Flutter extends \WC_Payment_Gateway {
 	 * Admin Panel Options
 	 */
 	public function admin_options() {
+		global $WooFlutter_Flutterwave;
 		?>
         <h3><?php echo esc_html(__('Flutterwave', 'domain')); ?></h3>
         <p>
-			Set your payment fallback URL <code><?php echo esc_url(site_url('/payment/flutterwave/{transaction_id}/{status}/')); ?></code>.<br/>
+			Set your payment fallback URL <code><?php echo esc_url(site_url($WooFlutter_Flutterwave->fallback . '{transaction_id}/{status}/')); ?></code>.<br/>
 			To avoid situations where bad network makes it sometimes impossible to verify transactions, set your webhook URL <code><?php echo WC()->api_request_url($this->id.'_webhook'); ?></code> <a href="https://app.flutterwave.com/dashboard/settings/webhooks/" target="_blank" rel="noopener noreferrer">On this Link</a> to avoid these kind of inconvenience.
 		</p>
 		<?php

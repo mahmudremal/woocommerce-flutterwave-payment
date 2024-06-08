@@ -15,3 +15,4 @@ import '../img/images/image-3.png';
 import '../img/images/image-4.png';
 import '../img/images/image-5.png';
 import '../img/images/image-6.png';
+import '../icons/gform.png';

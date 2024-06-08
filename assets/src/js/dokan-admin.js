@@ -9,3 +9,4 @@ import '../sass/dashboard.scss';
 
 // Icons
 // import '../icons/quicklogin.svg';
+import '../icons/dokan.png';

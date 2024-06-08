@@ -41,7 +41,8 @@ defined('WOOFLUTTER_BUILD_CSS_URI') || define('WOOFLUTTER_BUILD_CSS_URI', untrai
 defined('WOOFLUTTER_BUILD_CSS_DIR_PATH') || define('WOOFLUTTER_BUILD_CSS_DIR_PATH', untrailingslashit(WOOFLUTTER_DIR_PATH) . '/assets/build/css');
 defined('WOOFLUTTER_BUILD_LIB_URI') || define('WOOFLUTTER_BUILD_LIB_URI', untrailingslashit(WOOFLUTTER_DIR_URI) . '/assets/build/library');
 defined('WOOFLUTTER_OPTIONS') || define('WOOFLUTTER_OPTIONS', get_option('wooflutter'));
-
+// , 'gform'
+defined('WOOFLUTTER_WIDGETS') || define('WOOFLUTTER_WIDGETS', (array) get_option('wooflutter-widgets', ['woo', 'dokan', 'affiliatewp']));
 
 defined('WOOFLUTTER_TEST_MODE') || define('WOOFLUTTER_TEST_MODE', (bool)(isset(WOOFLUTTER_OPTIONS['testMode']) && WOOFLUTTER_OPTIONS['testMode']));
 defined('WOOFLUTTER_MAX_COMISSION') || define('WOOFLUTTER_MAX_COMISSION', 98.6);

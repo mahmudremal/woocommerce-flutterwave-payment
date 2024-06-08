@@ -17,6 +17,12 @@ class Dokan {
         $this->setup_hooks();
 	}
 	public function setup_hooks() {
+        add_filter('wooflutter/widgets/list', [$this, 'wooflutter_widgets_list'], 10, 1);
+        /**
+         * Turncat processing next if dokan is not enabled.
+         */
+        if (!in_array('dokan', WOOFLUTTER_WIDGETS)) {return;}
+        
         add_action('plugins_loaded', [$this, 'load_dokan_custom_payment_method'], 10, 0);
         add_filter('dokan_payment_gateways', [$this, 'dokan_payment_gateways'], 10, 1);
         add_filter('dokan_withdraw_methods', [$this, 'dokan_withdraw_methods'], 10, 1);
@@ -35,6 +41,29 @@ class Dokan {
 
         add_action('dokan_store_profile_saved', [$this, 'dokan_store_profile_saved'], 10, 2);
         // add_action('dokan_withdraw_request_approved', [$this, 'dokan_withdraw_request_approved'], 10, 1);
+
+        
+		add_action('wp_enqueue_scripts', [$this, 'register_styles']);
+		add_action('wp_enqueue_scripts', [$this, 'register_scripts']);
+		add_action('admin_enqueue_scripts', [$this, 'admin_enqueue_scripts'], 10, 1);
+    }
+    /**
+     * Added this Dokan integration widget to the widget list.
+     * 
+     * @param array $widgets list of all available widgets.
+     * 
+     * @return array widget list
+     */
+    public function wooflutter_widgets_list($widgets) {
+        $widgets['dokan'] = [
+            'title' => __('Dokan', 'wooflutter'),
+            'description' => __('Dokan multi-vendor woocommerce plugin integration for vendor withdrawals and much more.', 'wooflutter'),
+            'image' => WOOFLUTTER_BUILD_URI . '/icons/dokan.png',
+            // 'callback' => [$this, 'wooflutter_widgets_list_callback'],
+            'priority' => 10,
+            'active' => in_array('dokan', WOOFLUTTER_WIDGETS),
+        ];
+        return $widgets;
     }
     /**
      * Loaded dokan custom payment method after loaded all plugins.
@@ -366,4 +395,28 @@ class Dokan {
      */
     public function dokan_withdraw_request_approved($withdraw) {}
     // 
+	/**
+	 * Enqueue frontend Styles.
+	 * @return null
+	 */
+	public function register_styles() {
+	}
+	/**
+	 * Enqueue frontend Scripts.
+	 * @return null
+	 */
+	public function register_scripts() {
+        global $WooFlutter_Assets;
+		wp_enqueue_style('flutter-dokan', WOOFLUTTER_BUILD_CSS_URI . '/dokan_public.css', [], $WooFlutter_Assets->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH . '/dokan_public.css'), 'all');
+        wp_enqueue_script('flutter-dokan', WOOFLUTTER_BUILD_JS_URI . '/dokan_public.js', ['jquery', 'wp-element'], $WooFlutter_Assets->filemtime(WOOFLUTTER_BUILD_JS_DIR_PATH . '/dokan_public.js'), true);
+	}
+	/**
+	 * Enqueue backend Scripts and stylesheet.
+	 * @return null
+	 */
+	public function admin_enqueue_scripts($curr_page) {
+        global $WooFlutter_Assets;
+        wp_enqueue_style('flutter-dokan', WOOFLUTTER_BUILD_CSS_URI . '/dokan_admin.css', [], $WooFlutter_Assets->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH . '/dokan_admin.css'), 'all');
+        wp_enqueue_script('flutter-dokan', WOOFLUTTER_BUILD_JS_URI . '/dokan_admin.js', ['jquery', 'wp-element'], $WooFlutter_Assets->filemtime(WOOFLUTTER_BUILD_JS_DIR_PATH . '/dokan_admin.js'), true);
+	}
 }

@@ -16,6 +16,12 @@ class Gform {
 	private $lastEntryStatus;
 	private $transaction_id;
 	protected function __construct() {
+        add_filter('wooflutter/widgets/list', [$this, 'wooflutter_widgets_list'], 10, 1);
+		/**
+         * Turncat processing next if dokan is not enabled.
+         */
+        if (!in_array('gform', WOOFLUTTER_WIDGETS)) {return;}
+		
 		global $fwpGravityforms;$fwpGravityforms = $this;
 		$this->settingSlug = 'flutterwaveaddons';
 		$this->settings = WOOFLUTTER_OPTIONS;
@@ -23,6 +29,7 @@ class Gform {
 		$this->currentEntry = false;
 		// load class.
 		// $this->setup_hooks();
+
 		add_filter('gform_currencies', [$this, 'gform_currencies'], 10, 1);
 		add_filter('gform_flutterwave_request', [$this, 'gform_flutterwave_request'], 10, 5);
 		add_action('gform_loaded', [$this, 'gform_loaded'], 5, 0);
@@ -30,6 +37,15 @@ class Gform {
 		add_action('wooflutter/payment/flutterwave/status/back2text', [$this, 'wooflutter_payment_flutterwave_status_back2text'], 10, 5);
 		add_action('wooflutter/payment/flutterwave/status/back2link', [$this, 'wooflutter_payment_flutterwave_status_back2link'], 10, 5);
 		add_action('wooflutter/payment/flutterwave/status/retry', [$this, 'wooflutter_payment_flutterwave_status_retry'], 10, 5);
+
+		
+		add_filter('gform_filter_links_entry_list', [$this, 'gform_filter_links_entry_list'], 10, 3);
+		add_filter('gform_search_criteria_entry_list', [$this, 'gform_search_criteria_entry_list'], 10, 2);
+		add_filter('gform_entries_first_column_actions', [$this, 'gform_entries_first_column_actions'], 10, 5);
+		
+		add_action('wp_enqueue_scripts', [$this, 'register_styles']);
+		add_action('wp_enqueue_scripts', [$this, 'register_scripts']);
+		add_action('admin_enqueue_scripts', [$this, 'admin_enqueue_scripts'], 10, 1);
 	}
 	protected function setup_hooks() {
 		// add_action( 'init', [ $this, 'wp_init' ], 10, 0 );
@@ -126,6 +142,24 @@ class Gform {
 		add_action('wp_ajax_wooflutter/project/update/email/template', [$this, 'updateEmailTemplate'], 10, 0);
 
 	}
+    /**
+     * Added this Gravityform integration widget to the widget list.
+     * 
+     * @param array $widgets list of all available widgets.
+     * 
+     * @return array widget list
+     */
+    public function wooflutter_widgets_list($widgets) {
+        $widgets['gform'] = [
+            'title' => __('Gravityform', 'wooflutter'),
+            'description' => __('Gravityform multi-vendor woocommerce plugin integration for vendor withdrawals and much more.', 'wooflutter'),
+            'image' => WOOFLUTTER_BUILD_URI . '/icons/gform.png',
+            // 'callback' => [$this, 'wooflutter_widgets_list_callback'],
+            'priority' => 10,
+            'active' => in_array('gform', WOOFLUTTER_WIDGETS),
+        ];
+        return $widgets;
+    }
 	public function wp_init() {
 		$entry_id = 64;
 		$entry = \GFAPI::get_entry($entry_id);
@@ -1978,4 +2012,99 @@ class Gform {
 		return gform_get_meta($entry['id'], '_paymentlink');
 	}
 
+
+	
+
+	public function gform_filter_links_entry_list($filter_links, $form, $include_counts) {
+		global $wpdb;
+		
+		$form_id = absint($form['id']);
+		$pending_count = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) as total_pending FROM {$wpdb->prefix}gf_entry WHERE status='pending_payment' AND form_id=%s;", $form_id
+			)
+		);
+		
+		$filter_links[] = [
+			'id' => 'pending_payment',
+			'field_filters' => [
+				['key' => 'status', 'operator' => 'is', 'value' => 'pending_payment']
+			],
+			'count' => $pending_count,
+			'label' => esc_html__('Pending payment', 'gravitylovesflutterwave'),
+		];
+		return $filter_links;
+	}
+	public function gform_search_criteria_entry_list($search_criteria, $form_id) {
+		if(
+			isset($search_criteria['field_filters']) && 
+			count($search_criteria['field_filters']) >= 1 &&
+			isset($search_criteria['field_filters'][0]['key']) &&
+			$search_criteria['field_filters'][0]['key'] == 'status' &&
+			isset($search_criteria['field_filters'][0]['value']) &&
+			$search_criteria['field_filters'][0]['value'] == 'pending_payment'
+		) {
+			$search_criteria['status'] = 'pending_payment';
+		}
+		return $search_criteria;
+	}
+	public function gform_entries_first_column_actions($form_id, $field_id, $value, $entry, $query_string) {
+		// if($entry['status'] != 'pending_payment') {return;}
+		$args = [
+			'id' => $entry['id'],
+			'form_id' => $entry['form_id'],
+			'payment_amount' => $entry['payment_amount'],
+			'transaction_id' => $entry['transaction_id'],
+			'currency' => $entry['currency'],
+			'payable_link' => gform_get_meta($entry['id'], '_paymentlink'),
+			'payment_status' => ($entry['payment_status']===null)?false:$entry['payment_status'],
+			'transaction_id' => empty($entry['transaction_id'])?false:$entry['transaction_id'],
+			'refunded' => gform_get_meta($entry['id'], '_paymentrefunded'),
+			'date_created' => wp_date('M, d H:i', strtotime($entry['date_created'])),
+		];
+		?>
+		<span class="flutterwave_action">
+			| <a class="flutterwave_action__handle" href="#" data-href="<?php echo esc_url('/admin.php?'.$query_string); ?>" data-config="<?php echo esc_attr(json_encode($args)); ?>">Payment</a>
+		</span>
+		<?php
+		// print_r([$form_id, $field_id, $value, $entry, $query_string]);
+	}
+	
+	
+	/**
+	 * Enqueue frontend Styles.
+	 * @return null
+	 */
+	public function register_styles() {
+		global $WooFlutter_Assets;
+		wp_enqueue_style('woo-public', WOOFLUTTER_BUILD_CSS_URI . '/woo_public.css', [], $WooFlutter_Assets->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH . '/woo_public.css'), 'all');
+		wp_enqueue_style('flutter-gform', WOOFLUTTER_BUILD_CSS_URI.'/gform_public.css', [], $WooFlutter_Assets->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH.'/gform_public.css'), 'all');
+	}
+	/**
+	 * Enqueue frontend Scripts.
+	 * @return null
+	 */
+	public function register_scripts() {
+		global $WooFlutter_Assets;
+		// Register scripts.
+		// wp_register_script('imask', WOOFLUTTER_BUILD_LIB_URI.'/js/imask.min.js', [], false, true);
+		// wp_register_script('checkout-flutterwave', 'https://checkout.flutterwave.com/v3.js', ['jquery'], false, true);
+		// wp_register_script('forge', 'https://cdn.jsdelivr.net/npm/node-forge@1.0.0/dist/forge.min.js', ['jquery'], false, true);
+			// , 'imask'
+		wp_enqueue_script('flutter-gform', WOOFLUTTER_BUILD_JS_URI.'/gform_public.js', ['jquery'], $WooFlutter_Assets->filemtime(WOOFLUTTER_BUILD_JS_DIR_PATH.'/gform_public.js'), true);
+		wp_localize_script('flutter-gform', 'fwpSiteConfig', apply_filters('wooflutter/project/javascript/siteconfig', []));
+	}
+	/**
+	 * Enqueue backend Scripts and stylesheet.
+	 * @return null
+	 */
+	public function admin_enqueue_scripts($curr_page) {
+		global $post;global $WooFlutter_Assets;
+		// 'https://cdnjs.cloudflare.com/ajax/libs/imask/3.4.0/imask.min.js'
+		wp_register_script('imask', WOOFLUTTER_BUILD_LIB_URI.'/js/imask.min.js', [], false, true);
+		wp_enqueue_style('flutter-gform',WOOFLUTTER_BUILD_CSS_URI.'/gform_admin.css',[], $WooFlutter_Assets->filemtime(WOOFLUTTER_BUILD_CSS_DIR_PATH.'/gform_admin.css'),'all');
+		wp_enqueue_script('flutter-gform',WOOFLUTTER_BUILD_JS_URI.'/gform_admin.js',['jquery', 'imask'], $WooFlutter_Assets->filemtime(WOOFLUTTER_BUILD_JS_DIR_PATH.'/gform_admin.js'),true);
+		wp_localize_script('flutter-gform', 'fwpSiteConfig', apply_filters('wooflutter/project/javascript/siteconfig', []));
+		
+	}
 }

@@ -7,28 +7,19 @@
 // import { render } from "react-dom";
 import Post from "../modules/post";
 import Form from "./split";
+import Utilities from "../modules/utilities";
 
 (function ($) {
-	class PaymentManageFlutterwave {
+	class PaymentManageFlutterwave extends Utilities {
 		constructor() {
-			this.config = fwpSiteConfig;
-			var i18n = fwpSiteConfig?.i18n??{};
-			this.ajaxUrl = fwpSiteConfig?.ajaxUrl??'';
-			this.ajaxNonce = fwpSiteConfig?.ajax_nonce??'';
-			this.i18n = {confirming: 'Confirming', ...i18n};
-			this.Post = new Post(this);
+			super(this);
 			this.setup_hooks();
 		}
 		setup_hooks() {
 			window.DokanFlutter = this;
-			this.setup_events();
 			this.load_split_blocks();
 			this.fetch_bank_branches();
 			this.fix_payment_edit_links();
-		}
-		setup_events() {
-			const thisClass = this;
-			// document.body.addEventListener('load-overalies', (event) => {});
 		}
 		fix_payment_edit_links() {
 			document.querySelectorAll('.general-details .dokan-w5 a.dokan-btn[data-method]').forEach(anchor => {
@@ -52,7 +43,6 @@ import Form from "./split";
 			});
 		}
 		load_split_blocks() {
-			const thisClass = this;
 			document.querySelectorAll('#split_root').forEach(rootElement => {
 				const stored = Object.values(JSON.parse(rootElement.dataset.splits));
 				wp.element.render(<Form stored={stored}/>, rootElement);

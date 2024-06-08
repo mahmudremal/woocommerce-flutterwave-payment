@@ -13,6 +13,11 @@ class Affiliatewp {
 		$this->setup_hooks();
 	}
 	protected function setup_hooks() {
+        add_filter('wooflutter/widgets/list', [$this, 'wooflutter_widgets_list'], 10, 1);
+        /**
+         * Turncat processing next if affiliatewp is not enabled.
+         */
+        if (!in_array('affiliatewp', WOOFLUTTER_WIDGETS)) {return;}
 		$this->payout_method = 'flutterwave';
 		add_filter('affwp_payout_methods', [$this, 'add_payout_method']);
 		add_filter('affwp_is_payout_method_enabled', [$this, 'affwp_is_payout_method_enabled'], 10, 2);
@@ -31,7 +36,24 @@ class Affiliatewp {
 		add_filter('affwp_settings', [$this, 'register_settings_legacy']);
 
 	}
-
+    /**
+     * Added this AffiliateWP integration widget to the widget list.
+     * 
+     * @param array $widgets list of all available widgets.
+     * 
+     * @return array widget list
+     */
+    public function wooflutter_widgets_list($widgets) {
+        $widgets['affiliatewp'] = [
+            'title' => __('AffiliateWP', 'wooflutter'),
+            'description' => __('AffiliateWP integrations for flutterwave giving ability to flutterwave platform.', 'wooflutter'),
+            'image' => WOOFLUTTER_BUILD_URI . '/icons/affiliatewp.svg',
+            // 'callback' => [$this, 'wooflutter_widgets_list_callback'],
+            'priority' => 10,
+            'active' => in_array('affiliatewp', WOOFLUTTER_WIDGETS),
+        ];
+        return $widgets;
+    }
 	/**
 	 * Determines if we are in test mode
 	 *
