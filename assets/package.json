@@ -69,7 +69,7 @@
 	"dependencies": {
 		"@sweetalert2/theme-wordpress-admin": "^5.0.15",
 		"@woocommerce/data": "^4.1.0",
-		"@woocommerce/navigation": "^8.1.0",
+		"@woocommerce/navigation": "^8.2.0",
 		"@woocommerce/woocommerce-rest-api": "^1.0.1",
 		"axios": "^1.7.2",
 		"flutterwave-node-v3": "^1.1.9",
