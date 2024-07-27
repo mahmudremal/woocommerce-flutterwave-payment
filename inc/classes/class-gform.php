@@ -16,6 +16,7 @@ class Gform {
 	private $lastEntryStatus;
 	private $transaction_id;
 	protected function __construct() {
+		add_filter('gform_currencies', [$this, 'gform_currencies'], 10, 1);
         add_filter('wooflutter/widgets/list', [$this, 'wooflutter_widgets_list'], 10, 1);
 		/**
          * Turncat processing next if dokan is not enabled.
@@ -30,7 +31,6 @@ class Gform {
 		// load class.
 		// $this->setup_hooks();
 
-		add_filter('gform_currencies', [$this, 'gform_currencies'], 10, 1);
 		add_filter('gform_flutterwave_request', [$this, 'gform_flutterwave_request'], 10, 5);
 		add_action('gform_loaded', [$this, 'gform_loaded'], 5, 0);
 		add_action('wooflutter/payment/flutterwave/status', [$this, 'wooflutter_payment_flutterwave_status'], 10, 4);
@@ -48,9 +48,9 @@ class Gform {
 		add_action('admin_enqueue_scripts', [$this, 'admin_enqueue_scripts'], 10, 1);
 	}
 	protected function setup_hooks() {
-		// add_action( 'init', [ $this, 'wp_init' ], 10, 0 );
-		// add_action( 'admin_init', [ $this, 'admin_init' ], 10, 0 );
-		// add_filter( 'pre_get_posts', [ $this, 'pre_get_posts' ], 10, 1 );
+		// add_action('init', [ $this, 'wp_init'], 10, 0);
+		// add_action('admin_init', [ $this, 'admin_init'], 10, 0);
+		// add_filter('pre_get_posts', [ $this, 'pre_get_posts'], 10, 1);
 
 		/**
 		 * Hook into the Gravity Forms submission process
@@ -174,9 +174,7 @@ class Gform {
 	}
 	public function admin_init() {}
 	public function gform_loaded() {
-		if (!class_exists('GFForms') || !method_exists('GFForms', 'include_payment_addon_framework')) {
-			return;
-		}
+		if (!class_exists('GFForms') || !method_exists('GFForms', 'include_payment_addon_framework')) {return;}
 		require_once(apply_filters('wooflutter/path/fix/slashes', WOOFLUTTER_DIR_PATH . '/inc/widgets/class-gform-flutterwave.php'));
 		\GFAddOn::register('WOOFLUTTER\Inc\GFFlutterWave');
 	}
@@ -184,7 +182,7 @@ class Gform {
 	
 	public function gform_currencies($currencies) {
 		$currencies['NGN'] = [
-			'name'               => esc_html__( 'Nigerian Naira', 'gravityforms' ),
+			'name'               => esc_html__('Nigerian Naira', 'wooflutter'),
 			'symbol_left'        => '&#8358;',
 			'symbol_right'       => '',
 			'symbol_padding'     => ' ',
@@ -401,7 +399,7 @@ class Gform {
 	public function gform_settings_flutterwaveaddons() {
 		// Check if the user has permissions to access the settings page
 		if (!current_user_can('manage_options')) {
-			wp_die(__('You do not have sufficient permissions to access this page.'));
+			wp_die(__('You do not have sufficient permissions to access this page.', 'wooflutter'));
 		}
 		// Save settings if form is submitted
 		if (isset($_POST['gform_settings_flutterwaveaddons'])) {
@@ -1917,7 +1915,7 @@ class Gform {
 		// Here
 		defined('GRAVITYFORMS_FLUTTERWAVE_ADDONS_PAYMENT_DONE') || define('GRAVITYFORMS_FLUTTERWAVE_ADDONS_PAYMENT_DONE', true);
 		$verify = apply_filters('wooflutter/project/payment/flutterwave/verify', $transaction_id, $payment_status);
-		if(in_array($payment_status, ['success', 'successful'])) {
+		if(in_array($payment_status, $WooFlutter_Flutterwave->statuses['success'])) {
 			if($verify) {
 				$is_updated = \GFAPI::update_entry_property($entry_id, 'transaction_id', $transaction_id);
 				// $is_updated = \GFAPI::update_entry_property($entry_id, 'payment_status', $payment_status);
@@ -1949,7 +1947,7 @@ class Gform {
 				);
 			}
 		}
-		else if(in_array($payment_status, ['cancelled', 'failed']) && $verify) {
+		else if(in_array($payment_status, $WooFlutter_Flutterwave->statuses['error']) && $verify) {
 			do_action('gform_post_payment_' . $payment_status, $entry, [
 				'payment_status'        => 'Paid',
 				'payment_date'          => gmdate('Y-m-d H:i:s'),

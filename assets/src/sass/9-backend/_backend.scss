@@ -4,6 +4,42 @@
   --on: #2eddf3; /* color on */
   --of: #68838d; /* color off */
   --tr: all 0.25s ease 0s;
+  // &__container {}
+  // &__wrap {}
+  &__tabarea {
+    &__wrap {
+      gap: 10px;
+      padding: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      border: 1px solid #ddd;
+    }
+  }
+  &__tab {
+    cursor: pointer;
+    padding: 10px 20px;
+    border-radius: 20px;
+    &__link {
+      font-size: 20px;
+      font-weight: 600;
+      color: #3c3c3c;
+      text-decoration: none;
+      font-family: sans-serif;
+      outline: none !important;
+      text-transform: uppercase;
+      box-shadow: unset !important;
+    }
+    &.active {
+      background: #ddd;
+    }
+    &_single {
+      display: none;
+      &.active {
+        display: block;
+      }
+    }
+  }
   &__widgets {
     margin-top: 40px;
   }

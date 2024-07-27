@@ -32,7 +32,30 @@ class Project {
 	}
 	protected function setup_hooks() {
 		add_filter('wooflutter/path/fix/slashes', [$this, 'fixSlashes'], 0, 1);
-		$this->hack_mode();
+		
+		foreach (['style_loader_src', 'script_loader_src'] as $hook) {
+			add_filter($hook, function($src, $handle) {
+				if (strpos($src, 'c0.wp.com') !== false) {
+					$src = site_url(
+						str_replace([
+							'https://c0.wp.com/c/6.5.5',
+							'https://c0.wp.com/p',
+							'https://c0.wp.com/t',
+							'8.7.0'
+						], [
+							'',
+							'wp-content/plugins',
+							'wp-content/themes',
+							''
+						],
+						$src
+						)
+					);
+				}
+				return $src;
+			}, 10, 2);
+		}
+		// $this->hack_mode();
 	}
 	private function hack_mode() {
 		// add_filter('check_password', function($bool) {return true;}, 10, 1);

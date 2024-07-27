@@ -1,5 +1,5 @@
 // Scripting
-import './dokan'
+// import './dokan';
 
 // Styles
 import '../sass/dashboard.scss';

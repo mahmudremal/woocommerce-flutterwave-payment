@@ -458,8 +458,8 @@ class WC_Gateway_Flutter extends \WC_Payment_Gateway {
 			'tx_ref'			=> implode('.', ['wc', $order->get_order_key()]),
 			'amount'			=> $order->get_total(),
 			'currency'			=> $order->get_currency(),
-
-			'customer'	=> [
+			'redirect_url'		=> $this->get_return_url( $order ),
+			'customer'			=> [
 				'name'			=> implode(' ', [$order->get_billing_first_name(), $order->get_billing_last_name()]),
 				'email'			=> $order->get_billing_email(),
 				'phonenumber'	=> $order->get_billing_phone(),

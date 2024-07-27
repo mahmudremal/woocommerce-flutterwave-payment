@@ -25,6 +25,7 @@ class Flutterwave {
 	private $encryptionKey; // Replace with your Flutterwave API key
     private $base_url = 'https://api.flutterwave.com/v3';
     private $is_test_mode;
+    public $statuses = [];
 	
 	protected function __construct() {
         $this->settings = WOOFLUTTER_OPTIONS;
@@ -32,6 +33,10 @@ class Flutterwave {
 		$this->api_key  = isset($this->settings['secretkey'])?$this->settings['secretkey']:false;
 		$this->encryptionKey  = isset($this->settings['encryptionkey'])?$this->settings['encryptionkey']:false;
         $this->is_test_mode = true; // WOOFLUTTER_TEST_MODE;
+        $this->statuses = [
+            'success' => ['success', 'successful', 'completed', 'complete'],
+            'error'   => ['cancelled', 'failed']
+        ];
         
 		add_action('init', [ $this, 'on_init' ], 1, 0);
 
@@ -61,6 +66,7 @@ class Flutterwave {
                 'test_secret_key'   => '',
                 'live_secret_key'   => '',
                 'live_encript_key'  => '',
+                ...get_option('wooflutter_settings', [])
             ]);
             $isTestMode = ($widget['testmode'] == 'yes');
             $widget['secret_key'] = $isTestMode?$widget['test_secret_key']:$widget['live_secret_key'];
@@ -496,10 +502,14 @@ class Flutterwave {
     	return $query_vars;
 	}
 	public function template_include($template) {
-		$transaction_id		= (get_query_var('transaction_id') != '')?get_query_var('transaction_id'):get_query_var('tx_ref');
-		$payment_status		= (get_query_var('payment_status') != '')?get_query_var('payment_status'):get_query_var('status');
 		$file				= WOOFLUTTER_DIR_PATH . '/templates/payments/flutterwave.php';
-        
+		$transaction_id		= (get_query_var('transaction_id') != '')?get_query_var('transaction_id'):false;
+		$payment_status		= (get_query_var('payment_status') != '')?get_query_var('payment_status'):get_query_var('status');
+        $tx_ref = get_query_var('tx_ref');
+        $tx_ref_split = explode('.', $tx_ref);
+        if (!$tx_ref || empty($tx_ref) || $tx_ref_split[0] != 'gfrm') {
+            return $template;
+        }
         // return $template;
         // $payment_status&&!empty($payment_status)&&
 		if($transaction_id && file_exists($file)&& !is_dir($file)) {

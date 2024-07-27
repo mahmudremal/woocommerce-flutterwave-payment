@@ -18,6 +18,7 @@ $backtoText = apply_filters('wooflutter/payment/flutterwave/status/back2text', _
 $backtoLink = apply_filters('wooflutter/payment/flutterwave/status/back2link', false, $type, $transaction_id, $payment_status, $tx_ref);
 
 
+
 get_header(); ?>
 <div class="wrapper">
     <section class="fltrwv__payment-status-content overflow-hidden container">
