@@ -79,7 +79,7 @@
 		"sprintf-js": "^1.1.3",
 		"sweetalert": "^2.1.2",
 		"sweetalert2": "^11.7.5",
-		"terser-webpack-plugin": "^4.2.3",
+		"terser-webpack-plugin": "^5.3.11",
 		"tippy.js": "^6.3.7",
 		"toastify-js": "^1.12.0",
 		"twig": "^1.10.5",
