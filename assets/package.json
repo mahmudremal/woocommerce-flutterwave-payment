@@ -72,7 +72,7 @@
 		"@woocommerce/navigation": "^8.1.0",
 		"@woocommerce/woocommerce-rest-api": "^1.0.1",
 		"axios": "^1.7.2",
-		"flutterwave-node-v3": "^1.1.9",
+		"flutterwave-node-v3": "^1.2.0",
 		"json5": "^2.2.3",
 		"raw-loader": "^4.0.2",
 		"sass": "^1.56.1",
